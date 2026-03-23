@@ -119,7 +119,7 @@ export default function Setup() {
         <h1 className="text-3xl font-bold text-center mb-8">Team Setup</h1>
         {error && <p className="text-red-400 text-center mb-4">{error}</p>}
 
-        <div className="flex gap-4 max-w-2xl mx-auto">
+        <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
           {/* Team 1 */}
           <div className="flex-1 bg-blue-950/50 rounded-xl p-4 border border-blue-800">
             <h2 className="text-xl font-semibold text-blue-400 mb-3">Team 1</h2>
