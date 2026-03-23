@@ -198,7 +198,7 @@ export default function Setup() {
   // Individual mode
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-4">
-      <button onClick={() => navigate("/")} className="text-gray-400 hover:text-white absolute top-4 left-4">
+      <button onClick={() => navigate("/")} className="text-gray-400 hover:text-white self-start mb-6">
         &larr; Back
       </button>
       <h1 className="text-3xl font-bold mb-8">Individual Setup</h1>
