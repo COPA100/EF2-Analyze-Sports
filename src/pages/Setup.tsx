@@ -143,7 +143,7 @@ export default function Setup() {
               {team1Players.map((p) => (
                 <span key={p} className="bg-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-1">
                   {p}
-                  <button onClick={() => removePlayer(1, p)} className="text-blue-300 hover:text-white ml-1">&times;</button>
+                  <button onClick={() => removePlayer(1, p)} className="text-blue-300 hover:text-white ml-1 min-w-[24px] min-h-[24px] flex items-center justify-center">&times;</button>
                 </span>
               ))}
             </div>
@@ -172,7 +172,7 @@ export default function Setup() {
               {team2Players.map((p) => (
                 <span key={p} className="bg-green-800 px-3 py-1 rounded-full text-sm flex items-center gap-1">
                   {p}
-                  <button onClick={() => removePlayer(2, p)} className="text-green-300 hover:text-white ml-1">&times;</button>
+                  <button onClick={() => removePlayer(2, p)} className="text-green-300 hover:text-white ml-1 min-w-[24px] min-h-[24px] flex items-center justify-center">&times;</button>
                 </span>
               ))}
             </div>
