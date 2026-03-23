@@ -167,7 +167,7 @@ export default function Stats() {
           <p className="text-sm text-gray-400">Accuracy</p>
         </div>
         <div className="bg-gray-800 rounded-xl px-6 py-4 text-center">
-          <p className="text-3xl font-bold text-purple-400">
+          <p className="text-3xl font-bold text-white">
             {totalMakes}/{totalShots}
           </p>
           <p className="text-sm text-gray-400">Makes/Shots</p>
@@ -234,7 +234,7 @@ export default function Stats() {
                 ? session.teams.team1.includes(id)
                   ? "bg-blue-500"
                   : "bg-green-500"
-                : "bg-purple-500";
+                : "bg-blue-500";
             return (
               <div key={id} className="flex items-center gap-3">
                 <span className="w-24 text-sm text-gray-300 truncate">{id}</span>
