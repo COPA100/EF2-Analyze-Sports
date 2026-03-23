@@ -1,7 +1,18 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Setup from "./pages/Setup";
+import Play from "./pages/Play";
+import Stats from "./pages/Stats";
+
 export default function App() {
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-      <h1 className="text-2xl font-bold">EF2</h1>
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/setup" element={<Setup />} />
+        <Route path="/play/:gameId" element={<Play />} />
+        <Route path="/stats/:gameId" element={<Stats />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
