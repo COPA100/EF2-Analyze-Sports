@@ -54,3 +54,36 @@ See `context.md` for the full schema with all fields and `dbschema.txt` for the 
 - The `.env` file is in `.gitignore` but was committed historically — do not re-commit it
 - No test framework is configured yet
 - No routing library installed yet
+
+## gstack
+
+For all web browsing, use the `/browse` skill from gstack. Never use `mcp__claude-in-chrome__*` tools.
+
+Available skills:
+- `/office-hours` — Office hours
+- `/plan-ceo-review` — Plan CEO review
+- `/plan-eng-review` — Plan engineering review
+- `/plan-design-review` — Plan design review
+- `/design-consultation` — Design consultation
+- `/review` — Code review
+- `/ship` — Ship code
+- `/land-and-deploy` — Land and deploy
+- `/canary` — Canary deployment
+- `/benchmark` — Benchmark
+- `/browse` — Web browsing (use this instead of mcp__claude-in-chrome__* tools)
+- `/qa` — QA testing
+- `/qa-only` — QA only
+- `/design-review` — Design review
+- `/setup-browser-cookies` — Setup browser cookies
+- `/setup-deploy` — Setup deploy
+- `/retro` — Retrospective
+- `/investigate` — Investigate issues
+- `/document-release` — Document release
+- `/codex` — Codex
+- `/cso` — CSO
+- `/autoplan` — Auto-planning
+- `/careful` — Careful mode
+- `/freeze` — Freeze deployments
+- `/guard` — Guard mode
+- `/unfreeze` — Unfreeze deployments
+- `/gstack-upgrade` — Upgrade gstack
