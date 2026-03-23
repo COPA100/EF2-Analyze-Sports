@@ -5,7 +5,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center gap-8 p-4">
-      <h1 className="text-4xl font-bold">C4K Basketball</h1>
+      <div className="text-center">
+        <p className="text-6xl mb-3" aria-hidden="true">🏀</p>
+        <h1 className="text-4xl font-bold tracking-tight">C4K Basketball</h1>
+        <p className="text-gray-400 text-base mt-2">Tabletop Shot Tracker</p>
+      </div>
       <p className="text-gray-400 text-lg">Choose your game mode</p>
       <div className="flex flex-col gap-4 w-full max-w-xs">
         <button
