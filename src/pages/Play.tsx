@@ -344,6 +344,36 @@ export default function Play() {
           )}
           <p className="text-2xl font-bold">{gameState.currentPlayerId}'s turn</p>
           <p className="text-gray-400 mt-1">{shotDisplay}</p>
+          {/* Progress bar */}
+          {isTeam && session.teams ? (
+            <div className="mt-3 space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-blue-400 w-10">T1</span>
+                <div className="flex-1 bg-gray-800 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-blue-500 h-full rounded-full transition-all"
+                    style={{ width: `${(shots.filter(s => session.teams!.team1.includes(s.playerId)).length / 30) * 100}%` }}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-green-400 w-10">T2</span>
+                <div className="flex-1 bg-gray-800 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-green-500 h-full rounded-full transition-all"
+                    style={{ width: `${(shots.filter(s => session.teams!.team2.includes(s.playerId)).length / 30) * 100}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-3 bg-gray-800 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-blue-500 h-full rounded-full transition-all"
+                style={{ width: `${(shots.length / 20) * 100}%` }}
+              />
+            </div>
+          )}
         </div>
       </div>
 
