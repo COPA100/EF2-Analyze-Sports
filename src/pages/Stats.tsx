@@ -141,7 +141,7 @@ export default function Stats() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-4 pb-12">
+    <div className="min-h-screen bg-gray-950 text-white p-4 pb-12 max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold text-center mb-6">Game Stats</h1>
 
       {/* Winner banner for team mode */}
