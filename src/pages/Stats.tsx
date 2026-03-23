@@ -6,7 +6,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
   getDocs,
   updateDoc,
   Timestamp,
@@ -46,13 +45,12 @@ export default function Stats() {
 
         const shotsQuery = query(
           collection(db, "shots"),
-          where("gameId", "==", gameId),
-          orderBy("shotNumber", "asc")
+          where("gameId", "==", gameId)
         );
         const shotsSnap = await getDocs(shotsQuery);
-        const shotsList = shotsSnap.docs.map(
-          (d) => ({ id: d.id, ...d.data() }) as Shot
-        );
+        const shotsList = shotsSnap.docs
+          .map((d) => ({ id: d.id, ...d.data() }) as Shot)
+          .sort((a, b) => a.shotNumber - b.shotNumber);
 
         setSession(sess);
         setShots(shotsList);
