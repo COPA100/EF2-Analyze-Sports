@@ -25,6 +25,12 @@ export default function Home() {
           Team Play
         </button>
       </div>
+      <button
+        onClick={() => navigate("/leaderboard")}
+        className="bg-yellow-600 hover:bg-yellow-700 text-white text-xl font-semibold py-4 px-8 rounded-xl transition-colors w-full max-w-xs"
+      >
+        Leaderboard
+      </button>
       <p className="text-gray-500 text-sm mt-4">
         Individual: 20 shots per player &middot; Team: 30 shots per team
       </p>
