@@ -178,17 +178,14 @@ export default function Stats() {
       <div className="max-w-md mx-auto mb-8">
         <h2 className="text-xl font-semibold mb-3 text-center">Shot Heatmap</h2>
         <ZoneGrid mode="heatmap" zoneData={zoneData} />
-        <div className="flex justify-center gap-4 mt-3 text-xs text-gray-400">
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 bg-green-600 rounded" /> &ge;66%
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 bg-orange-500 rounded" /> 33-66%
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 bg-red-600 rounded" /> &lt;33%
-          </span>
-          <span className="flex items-center gap-1">
+        <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
+          <span>0%</span>
+          <div
+            className="h-3 w-32 rounded"
+            style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }}
+          />
+          <span>100%</span>
+          <span className="flex items-center gap-1 ml-2">
             <span className="w-3 h-3 bg-gray-800 rounded border border-gray-700" /> No shots
           </span>
         </div>

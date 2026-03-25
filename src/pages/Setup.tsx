@@ -197,13 +197,13 @@ export default function Setup() {
 
   // Individual mode
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-4">
-      <button onClick={() => navigate("/")} className="text-gray-400 hover:text-white mb-6">
+    <div className="min-h-screen bg-gray-950 text-white p-4">
+      <button onClick={() => navigate("/")} className="text-gray-400 hover:text-white mb-6 block">
         &larr; Back
       </button>
-      <h1 className="text-3xl font-bold mb-8">Individual Setup</h1>
-      {error && <p className="text-red-400 mb-4">{error}</p>}
-      <div className="w-full max-w-xs">
+      <h1 className="text-3xl font-bold text-center mb-8">Individual Setup</h1>
+      {error && <p className="text-red-400 text-center mb-4">{error}</p>}
+      <div className="w-full max-w-xs mx-auto">
         <input
           type="text"
           value={playerId}

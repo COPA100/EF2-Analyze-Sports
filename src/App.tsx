@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import Setup from "./pages/Setup";
 import Play from "./pages/Play";
 import Stats from "./pages/Stats";
+import Dashboard from "./pages/Dashboard";
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
         <Route path="/setup" element={<Setup />} />
         <Route path="/play/:gameId" element={<Play />} />
         <Route path="/stats/:gameId" element={<Stats />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
   );

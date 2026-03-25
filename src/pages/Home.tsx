@@ -28,6 +28,12 @@ export default function Home() {
       <p className="text-gray-500 text-sm mt-4">
         Individual: 20 shots per player &middot; Team: 30 shots per team
       </p>
+      <button
+        onClick={() => navigate("/dashboard")}
+        className="text-gray-400 hover:text-white text-sm underline underline-offset-4 mt-2 transition-colors"
+      >
+        View Dashboard
+      </button>
     </div>
   );
 }
