@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { collection, doc, setDoc, addDoc, Timestamp } from "firebase/firestore";
+import { collection, doc, setDoc, addDoc, Timestamp, query, where, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import type { GameSession } from "../types";
 
@@ -34,6 +34,21 @@ export default function Setup() {
     setLoading(true);
     setError("");
     try {
+      // Check if this player already played an individual game
+      const existingSnap = await getDocs(
+        query(
+          collection(db, "gameSessions"),
+          where("activityType", "==", "individual"),
+          where("playerIds", "array-contains", id),
+          where("isCompleted", "==", true)
+        )
+      );
+      if (!existingSnap.empty) {
+        setError(`Player "${id}" has already played their individual game.`);
+        setLoading(false);
+        return;
+      }
+
       await ensureUser(id);
       const session: Omit<GameSession, "id"> = {
         activityType: "individual",
