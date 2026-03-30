@@ -151,23 +151,23 @@ export default function Stats() {
           <p className="text-lg text-gray-400 mt-2">
             <span className="text-blue-400">Team 1: {team1Points} pts</span>
             {" vs "}
-            <span className="text-green-400">Team 2: {team2Points} pts</span>
+            <span className="text-orange-400">Team 2: {team2Points} pts</span>
           </p>
         </div>
       )}
 
       {/* Summary cards */}
       <div className="flex gap-3 justify-center mb-8 flex-wrap">
-        <div className="bg-gray-800 rounded-xl px-6 py-4 text-center">
-          <p className="text-3xl font-bold text-blue-400">{totalPoints}</p>
+        <div className="bg-gray-800 rounded-xl px-6 py-4 text-center border border-amber-500/20">
+          <p className="text-3xl font-bold text-amber-400">{totalPoints}</p>
           <p className="text-sm text-gray-400">Total Points</p>
         </div>
-        <div className="bg-gray-800 rounded-xl px-6 py-4 text-center">
-          <p className="text-3xl font-bold text-green-400">{accuracy}%</p>
+        <div className="bg-gray-800 rounded-xl px-6 py-4 text-center border border-cyan-500/20">
+          <p className="text-3xl font-bold text-cyan-400">{accuracy}%</p>
           <p className="text-sm text-gray-400">Accuracy</p>
         </div>
-        <div className="bg-gray-800 rounded-xl px-6 py-4 text-center">
-          <p className="text-3xl font-bold text-white">
+        <div className="bg-gray-800 rounded-xl px-6 py-4 text-center border border-violet-500/20">
+          <p className="text-3xl font-bold text-violet-400">
             {totalMakes}/{totalShots}
           </p>
           <p className="text-sm text-gray-400">Makes/Shots</p>
@@ -193,7 +193,7 @@ export default function Stats() {
 
       {/* Points per zone bar chart */}
       <div className="max-w-md mx-auto mb-8">
-        <h2 className="text-xl font-semibold mb-3 text-center">
+        <h2 className="text-xl font-semibold mb-3 text-center text-amber-400">
           Points by Zone
         </h2>
         <div className="space-y-2">
@@ -202,7 +202,7 @@ export default function Stats() {
               <span className="w-16 text-sm text-gray-400">Zone {z}</span>
               <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
                 <div
-                  className="bg-blue-500 h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold transition-all"
+                  className="bg-amber-500 h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold text-gray-900 transition-all"
                   style={{
                     width: `${(zonePoints[z] / maxZonePoints) * 100}%`,
                     minWidth: zonePoints[z] > 0 ? "2rem" : 0,
@@ -218,7 +218,7 @@ export default function Stats() {
 
       {/* Per-player accuracy */}
       <div className="max-w-md mx-auto mb-8">
-        <h2 className="text-xl font-semibold mb-3 text-center">
+        <h2 className="text-xl font-semibold mb-3 text-center text-violet-400">
           Player Stats
         </h2>
         <div className="space-y-2">
@@ -226,18 +226,24 @@ export default function Stats() {
             const ps = playerStats[id];
             const pAcc =
               ps.shots > 0 ? Math.round((ps.makes / ps.shots) * 100) : 0;
-            const teamColor =
-              isTeam && session.teams
-                ? session.teams.team1.includes(id)
-                  ? "bg-blue-500"
-                  : "bg-green-500"
-                : "bg-blue-500";
+            const isTeam1 = isTeam && session.teams?.team1.includes(id);
+            const isTeam2 = isTeam && session.teams?.team2.includes(id);
+            const barColor = isTeam1
+              ? "bg-blue-500 text-white"
+              : isTeam2
+                ? "bg-orange-500 text-gray-900"
+                : "bg-violet-500 text-white";
+            const labelColor = isTeam1
+              ? "text-blue-400"
+              : isTeam2
+                ? "text-orange-400"
+                : "text-gray-300";
             return (
               <div key={id} className="flex items-center gap-3">
-                <span className="w-24 text-sm text-gray-300 truncate">{id}</span>
+                <span className={`w-24 text-sm truncate ${labelColor}`}>{id}</span>
                 <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
                   <div
-                    className={`${teamColor} h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold transition-all`}
+                    className={`${barColor} h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold transition-all`}
                     style={{
                       width: `${pAcc}%`,
                       minWidth: ps.shots > 0 ? "3rem" : 0,
