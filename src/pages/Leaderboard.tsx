@@ -304,7 +304,7 @@ export default function Leaderboard() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-semibold text-yellow-400">
-                  Best Game
+                  Best Individual Game
                 </h2>
                 <div className="flex gap-1">
                   <FilterButton
