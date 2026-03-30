@@ -4,13 +4,21 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import type { GameSession, Shot } from "../types";
 
-type SortBy = "points" | "accuracy";
+type SortBy = "points" | "accuracy" | "rating";
+
+// Rating = points * sqrt(accuracy/100)
+// Rewards high scorers who are also accurate — a 30pt/60% player
+// rates higher than a 30pt/40% player, but points still dominate.
+function calcRating(points: number, accuracy: number): number {
+  return Math.round(points * Math.sqrt(accuracy / 100) * 10) / 10;
+}
 
 interface PlayerStats {
   id: string;
   points: number;
   games: number;
   accuracy: number;
+  rating: number;
   makes: number;
   shots: number;
 }
@@ -19,6 +27,7 @@ interface BestGame {
   id: string;
   points: number;
   accuracy: number;
+  rating: number;
   makes: number;
   shots: number;
 }
@@ -82,14 +91,18 @@ export default function Leaderboard() {
           if (s.result === "make") stats[s.playerId].makes++;
         }
 
-        const lifetimeRanked = Object.entries(stats).map(([id, s]) => ({
-          id,
-          points: s.points,
-          games: s.games,
-          makes: s.makes,
-          shots: s.shots,
-          accuracy: s.shots > 0 ? Math.round((s.makes / s.shots) * 100) : 0,
-        }));
+        const lifetimeRanked = Object.entries(stats).map(([id, s]) => {
+          const accuracy = s.shots > 0 ? Math.round((s.makes / s.shots) * 100) : 0;
+          return {
+            id,
+            points: s.points,
+            games: s.games,
+            makes: s.makes,
+            shots: s.shots,
+            accuracy,
+            rating: calcRating(s.points, accuracy),
+          };
+        });
 
         setLifetime(lifetimeRanked);
 
@@ -121,6 +134,7 @@ export default function Leaderboard() {
             id: g.playerId,
             points: g.points,
             accuracy: acc,
+            rating: calcRating(g.points, acc),
             makes: g.makes,
             shots: g.shots,
           };
@@ -142,15 +156,15 @@ export default function Leaderboard() {
     load();
   }, []);
 
-  function sortList<T extends { points: number; accuracy: number }>(
+  function sortList<T extends { points: number; accuracy: number; rating: number }>(
     list: T[],
     sortBy: SortBy
   ): T[] {
-    return [...list].sort((a, b) =>
-      sortBy === "points"
-        ? b.points - a.points || b.accuracy - a.accuracy
-        : b.accuracy - a.accuracy || b.points - a.points
-    );
+    return [...list].sort((a, b) => {
+      if (sortBy === "points") return b.points - a.points || b.accuracy - a.accuracy;
+      if (sortBy === "accuracy") return b.accuracy - a.accuracy || b.points - a.points;
+      return b.rating - a.rating || b.points - a.points;
+    });
   }
 
   if (loading) {
@@ -163,18 +177,14 @@ export default function Leaderboard() {
 
   const sortedBest = sortList(bestGames, bestSort);
   const sortedLifetime = sortList(lifetime, lifetimeSort);
-  const bestMax =
-    sortedBest.length > 0
-      ? bestSort === "points"
-        ? sortedBest[0].points
-        : sortedBest[0].accuracy
-      : 1;
-  const lifetimeMax =
-    sortedLifetime.length > 0
-      ? lifetimeSort === "points"
-        ? sortedLifetime[0].points
-        : sortedLifetime[0].accuracy
-      : 1;
+  function getMax(list: { points: number; accuracy: number; rating: number }[], sortBy: SortBy): number {
+    if (list.length === 0) return 1;
+    if (sortBy === "points") return list[0].points;
+    if (sortBy === "accuracy") return list[0].accuracy;
+    return list[0].rating;
+  }
+  const bestMax = getMax(sortedBest, bestSort);
+  const lifetimeMax = getMax(sortedLifetime, lifetimeSort);
 
   function FilterButton({
     active,
@@ -204,6 +214,7 @@ export default function Leaderboard() {
     id,
     points,
     accuracy,
+    rating,
     subtitle,
     barValue,
     barMax,
@@ -214,6 +225,7 @@ export default function Leaderboard() {
     id: string;
     points: number;
     accuracy: number;
+    rating: number;
     subtitle: string;
     barValue: number;
     barMax: number;
@@ -269,8 +281,10 @@ export default function Leaderboard() {
           </div>
           <p className="text-[10px] text-gray-500 mt-0.5">
             {sortBy === "points"
-              ? `${accuracy}% accuracy`
-              : `${points} pts`}
+              ? `${accuracy}% accuracy · ${rating} rating`
+              : sortBy === "accuracy"
+                ? `${points} pts · ${rating} rating`
+                : `${points} pts · ${accuracy}% accuracy`}
           </p>
         </div>
       </div>
@@ -317,6 +331,11 @@ export default function Leaderboard() {
                     label="Accuracy"
                     onClick={() => setBestSort("accuracy")}
                   />
+                  <FilterButton
+                    active={bestSort === "rating"}
+                    label="Rating"
+                    onClick={() => setBestSort("rating")}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
@@ -327,15 +346,18 @@ export default function Leaderboard() {
                     id={p.id}
                     points={p.points}
                     accuracy={p.accuracy}
+                    rating={p.rating}
                     subtitle={`${p.makes}/${p.shots} makes`}
                     barValue={
-                      bestSort === "points" ? p.points : p.accuracy
+                      bestSort === "points" ? p.points : bestSort === "accuracy" ? p.accuracy : p.rating
                     }
                     barMax={bestMax}
                     barLabel={
                       bestSort === "points"
                         ? `${p.points} pts`
-                        : `${p.accuracy}%`
+                        : bestSort === "accuracy"
+                          ? `${p.accuracy}%`
+                          : `${p.rating}`
                     }
                     sortBy={bestSort}
                   />
@@ -360,6 +382,11 @@ export default function Leaderboard() {
                     label="Accuracy"
                     onClick={() => setLifetimeSort("accuracy")}
                   />
+                  <FilterButton
+                    active={lifetimeSort === "rating"}
+                    label="Rating"
+                    onClick={() => setLifetimeSort("rating")}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
@@ -370,15 +397,18 @@ export default function Leaderboard() {
                     id={p.id}
                     points={p.points}
                     accuracy={p.accuracy}
+                    rating={p.rating}
                     subtitle={`${p.games} game${p.games !== 1 ? "s" : ""}`}
                     barValue={
-                      lifetimeSort === "points" ? p.points : p.accuracy
+                      lifetimeSort === "points" ? p.points : lifetimeSort === "accuracy" ? p.accuracy : p.rating
                     }
                     barMax={lifetimeMax}
                     barLabel={
                       lifetimeSort === "points"
                         ? `${p.points} pts`
-                        : `${p.accuracy}%`
+                        : lifetimeSort === "accuracy"
+                          ? `${p.accuracy}%`
+                          : `${p.rating}`
                     }
                     sortBy={lifetimeSort}
                   />
