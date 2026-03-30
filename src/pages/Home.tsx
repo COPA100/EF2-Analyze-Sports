@@ -36,9 +36,9 @@ export default function Home() {
       </p>
       <button
         onClick={() => navigate("/dashboard")}
-        className="text-gray-400 hover:text-white text-sm underline underline-offset-4 mt-2 transition-colors"
+        className="bg-purple-600 hover:bg-purple-700 text-white text-xl font-semibold py-4 px-8 rounded-xl transition-colors w-full max-w-xs"
       >
-        View Dashboard
+        Dashboard
       </button>
     </div>
   );
