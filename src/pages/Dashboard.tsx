@@ -31,8 +31,6 @@ import {
   Area,
   LineChart,
   Line,
-  PieChart,
-  Pie,
 } from "recharts";
 
 type View = "all" | "player";
