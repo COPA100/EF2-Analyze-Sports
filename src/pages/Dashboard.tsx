@@ -733,12 +733,24 @@ function AllPlayersView({
                       }
                     >
                       {sess.activityType === "team" ? "Team" : "Individual"}
-                    </span>{" "}
-                    <span className="text-gray-500">&middot;</span>{" "}
-                    <span className="text-gray-300">
-                      {sess.playerIds.join(", ")}
                     </span>
                   </p>
+                  {sess.activityType === "team" && sess.teams ? (
+                    <div className="text-xs mt-0.5">
+                      <p>
+                        <span className="text-blue-400">T1:</span>{" "}
+                        <span className="text-gray-300">{sess.teams.team1.join(", ")}</span>
+                      </p>
+                      <p>
+                        <span className="text-green-400">T2:</span>{" "}
+                        <span className="text-gray-300">{sess.teams.team2.join(", ")}</span>
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-300 mt-0.5">
+                      {sess.playerIds.join(", ")}
+                    </p>
+                  )}
                   <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>
                 </div>
                 <div className="text-right">
