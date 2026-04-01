@@ -285,24 +285,34 @@ export default function Leaderboard() {
                         {subtitle}
                       </span>
                     </div>
-                    <div className="bg-gray-700 rounded-full h-4 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full flex items-center justify-end pr-2 text-[10px] font-bold transition-all ${
-                          rank === 1
-                            ? "bg-yellow-500 text-gray-900"
-                            : rank === 2
-                              ? "bg-gray-300 text-gray-900"
-                              : rank === 3
-                                ? "bg-orange-600 text-white"
-                                : "bg-blue-500 text-white"
-                        }`}
-                        style={{
-                          width: `${barMax > 0 ? (barValue / barMax) * 100 : 0}%`,
-                          minWidth: "3rem",
-                        }}
-                      >
-                        {barLabel}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-700 rounded-full h-4 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${
+                            rank === 1
+                              ? "bg-yellow-500"
+                              : rank === 2
+                                ? "bg-gray-300"
+                                : rank === 3
+                                  ? "bg-orange-600"
+                                  : "bg-blue-500"
+                          }`}
+                          style={{
+                            width: `${barMax > 0 ? (barValue / barMax) * 100 : 0}%`,
+                          }}
+                        />
                       </div>
+                      <span className={`text-[10px] font-bold shrink-0 ${
+                        rank === 1
+                          ? "text-yellow-400"
+                          : rank === 2
+                            ? "text-gray-300"
+                            : rank === 3
+                              ? "text-orange-400"
+                              : "text-blue-400"
+                      }`}>
+                        {barLabel}
+                      </span>
                     </div>
                     <p className="text-[10px] text-gray-500 mt-0.5">
                       {secondaryStat}
