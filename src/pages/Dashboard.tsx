@@ -736,8 +736,7 @@ function AllPlayersView({
                     </span>{" "}
                     <span className="text-gray-500">&middot;</span>{" "}
                     <span className="text-gray-300">
-                      {sess.playerIds.length} player
-                      {sess.playerIds.length !== 1 ? "s" : ""}
+                      {sess.playerIds.join(", ")}
                     </span>
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>
