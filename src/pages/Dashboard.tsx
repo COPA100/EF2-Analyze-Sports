@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   collection,
@@ -27,8 +27,6 @@ import {
   PolarRadiusAxis,
   Radar,
   Legend,
-  AreaChart,
-  Area,
   LineChart,
   Line,
 } from "recharts";
@@ -134,8 +132,8 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-4 pb-12">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-950 text-white p-3 sm:p-4">
+      <div className="max-w-[1500px] mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <button
@@ -224,14 +222,15 @@ export default function Dashboard() {
           </div>
         )}
 
-        {view === "all" ? (
-          <AllPlayersView
-            sessions={sessions}
-            shots={shots}
-            navigate={navigate}
-          />
-        ) : (
-          <div>
+        <div>
+          {view === "all" ? (
+            <AllPlayersView
+              sessions={sessions}
+              shots={shots}
+              navigate={navigate}
+            />
+          ) : (
+            <div className="lg:flex lg:flex-col">
             {/* Player ID input */}
             <div className="flex gap-2 mb-6 max-w-sm mx-auto">
               <input
@@ -251,20 +250,21 @@ export default function Dashboard() {
                 Look Up
               </button>
             </div>
-            {lookupId ? (
-              <PlayerView
-                playerId={lookupId}
-                sessions={sessions}
-                shots={shots}
-                navigate={navigate}
-              />
-            ) : (
-              <p className="text-center text-gray-500 mt-12">
-                Enter a Player ID to see their lifetime stats.
-              </p>
-            )}
-          </div>
-        )}
+              {lookupId ? (
+                <PlayerView
+                  playerId={lookupId}
+                  sessions={sessions}
+                  shots={shots}
+                  navigate={navigate}
+                />
+              ) : (
+                <p className="text-center text-gray-500 mt-12">
+                  Enter a Player ID to see their lifetime stats.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -321,8 +321,6 @@ function AllPlayersView({
   const zonePoints: Record<number, number> = {};
   for (let z = 1; z <= 6; z++)
     zonePoints[z] = zoneData[z].makes * ZONE_POINTS[z];
-  const maxZonePoints = Math.max(...Object.values(zonePoints), 1);
-
   const zoneAccuracy: Record<number, number> = {};
   for (let z = 1; z <= 6; z++) {
     const total = zoneData[z].makes + zoneData[z].misses;
@@ -374,8 +372,6 @@ function AllPlayersView({
   const zoneShotCounts: Record<number, number> = {};
   for (let z = 1; z <= 6; z++)
     zoneShotCounts[z] = zoneData[z].makes + zoneData[z].misses;
-  const maxZoneShots = Math.max(...Object.values(zoneShotCounts), 1);
-
   let bestZone = 1;
   let bestZoneAcc = 0;
   for (let z = 1; z <= 6; z++) {
@@ -406,15 +402,9 @@ function AllPlayersView({
       points: s.totalPoints,
       gameId: s.id,
     }));
-  const maxTrendPoints = Math.max(
-    ...gamePointsTrend.map((g) => g.points),
-    1
-  );
-
   return (
-    <>
-      {/* Overview Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+    <div>
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2 mb-4">
         <StatCard
           value={sessions.length}
           label="Total Games"
@@ -449,77 +439,52 @@ function AllPlayersView({
         />
       </div>
 
-      {/* Game Mode Breakdown */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Game Mode Breakdown</h2>
-        <div className="flex gap-3">
-          <div className="flex-1 bg-gray-800 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-blue-400">
-              {individualSessions.length}
-            </p>
-            <p className="text-sm text-gray-400">Individual</p>
+      <div className="grid gap-4 lg:grid-cols-12">
+        <DashboardPanel title="All-Time Shot Heatmap" className="lg:col-span-4">
+          <div className="max-w-sm mx-auto">
+            <ZoneGrid mode="heatmap" zoneData={zoneData} />
+            <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
+              <span>0%</span>
+              <div
+                className="h-3 w-24 rounded"
+                style={{
+                  background:
+                    "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))",
+                }}
+              />
+              <span>100%</span>
+            </div>
           </div>
-          <div className="flex-1 bg-gray-800 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-green-400">
-              {teamSessions.length}
-            </p>
-            <p className="text-sm text-gray-400">Team</p>
+          <div className="grid grid-cols-3 gap-2 mt-3">
+            <div className="bg-gray-800 rounded-lg p-2 text-center">
+              <p className="text-lg font-bold text-blue-400">{individualSessions.length}</p>
+              <p className="text-[11px] text-gray-400">Individual</p>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-2 text-center">
+              <p className="text-lg font-bold text-green-400">{teamSessions.length}</p>
+              <p className="text-[11px] text-gray-400">Team</p>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-2 text-center">
+              <p className="text-lg font-bold text-yellow-400">{completedSessions.length}</p>
+              <p className="text-[11px] text-gray-400">Completed</p>
+            </div>
           </div>
-          <div className="flex-1 bg-gray-800 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-yellow-400">
-              {completedSessions.length}
-            </p>
-            <p className="text-sm text-gray-400">Completed</p>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="bg-gray-800 rounded-lg p-2 text-center">
+              <p className="text-sm text-gray-400">Best Zone</p>
+              <p className="text-xl font-bold text-green-400">Z{bestZone}</p>
+              <p className="text-[11px] text-gray-500">{bestZoneAcc}%</p>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-2 text-center">
+              <p className="text-sm text-gray-400">Most Picked</p>
+              <p className="text-xl font-bold text-blue-400">Z{popularZone}</p>
+              <p className="text-[11px] text-gray-500">{popularCount} shots</p>
+            </div>
           </div>
-        </div>
-      </div>
+        </DashboardPanel>
 
-      {/* All-Time Heatmap */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3 text-center">
-          All-Time Shot Heatmap
-        </h2>
-        <div className="max-w-md mx-auto">
-          <ZoneGrid mode="heatmap" zoneData={zoneData} />
-          <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
-            <span>0%</span>
-            <div
-              className="h-3 w-32 rounded"
-              style={{
-                background:
-                  "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))",
-              }}
-            />
-            <span>100%</span>
-            <span className="flex items-center gap-1 ml-2">
-              <span className="w-3 h-3 bg-gray-800 rounded border border-gray-700" />{" "}
-              No shots
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Zone Insights */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
-        <div className="bg-gray-800 rounded-xl p-4 text-center">
-          <p className="text-sm text-gray-400 mb-1">Best Zone</p>
-          <p className="text-2xl font-bold text-green-400">Zone {bestZone}</p>
-          <p className="text-xs text-gray-500">{bestZoneAcc}% accuracy</p>
-        </div>
-        <div className="bg-gray-800 rounded-xl p-4 text-center">
-          <p className="text-sm text-gray-400 mb-1">Most Popular Zone</p>
-          <p className="text-2xl font-bold text-blue-400">
-            Zone {popularZone}
-          </p>
-          <p className="text-xs text-gray-500">{popularCount} shots</p>
-        </div>
-      </div>
-
-      {/* Zone Accuracy Radar */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Zone Accuracy</h2>
-        <div className="bg-gray-800/50 rounded-xl p-2">
-          <ResponsiveContainer width="100%" height={300}>
+        <DashboardPanel title="Zone Accuracy" className="lg:col-span-4">
+          <ResponsiveContainer width="100%" height={250}>
             <RadarChart
               data={[1, 2, 3, 4, 5, 6].map((z) => ({
                 zone: `Zone ${z} (${ZONE_POINTS[z]}pt)`,
@@ -536,17 +501,13 @@ function AllPlayersView({
                 contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
                 labelStyle={{ color: "#f3f4f6" }}
                 itemStyle={{ color: "#d1d5db" }}
-                formatter={(value: number) => [`${value}%`]}
+                formatter={(value) => [`${value ?? 0}%`]}
               />
             </RadarChart>
           </ResponsiveContainer>
-        </div>
-      </div>
+        </DashboardPanel>
 
-      {/* Zone Breakdown — Points + Makes/Misses */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Zone Breakdown</h2>
-        <div className="bg-gray-800/50 rounded-xl p-2">
+        <DashboardPanel title="Zone Breakdown" className="lg:col-span-4">
           <ResponsiveContainer width="100%" height={250}>
             <BarChart
               data={[1, 2, 3, 4, 5, 6].map((z) => ({
@@ -570,47 +531,11 @@ function AllPlayersView({
               <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
             </BarChart>
           </ResponsiveContainer>
-        </div>
-      </div>
+        </DashboardPanel>
 
-      {/* Points Per Game Trend */}
-      {gamePointsTrend.length > 1 && (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">
-            Points Per Game Trend
-          </h2>
-          <div className="bg-gray-800/50 rounded-xl p-2">
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={gamePointsTrend} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="pointsGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="label" tick={{ fill: "#9ca3af", fontSize: 11 }} />
-                <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
-                  labelStyle={{ color: "#f3f4f6" }}
-                  itemStyle={{ color: "#d1d5db" }}
-                />
-                <Area type="monotone" dataKey="points" name="Points" stroke="#3b82f6" fill="url(#pointsGradient)" strokeWidth={2} dot={{ fill: "#3b82f6", r: 4 }} activeDot={{ r: 6 }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
-
-      {/* Top Players by Points */}
-      {topByPoints.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">
-            Top Players by Points
-          </h2>
-          <div className="bg-gray-800/50 rounded-xl p-2">
-            <ResponsiveContainer width="100%" height={Math.max(180, topByPoints.length * 40 + 40)}>
+        {topByPoints.length > 0 && (
+          <DashboardPanel title="Top Players by Points" className="lg:col-span-4">
+            <ResponsiveContainer width="100%" height={240}>
               <BarChart
                 layout="vertical"
                 data={topByPoints.map((id) => ({
@@ -627,9 +552,10 @@ function AllPlayersView({
                   contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
                   labelStyle={{ color: "#f3f4f6" }}
                   itemStyle={{ color: "#d1d5db" }}
-                  formatter={(value: number, name: string) => {
-                    if (name === "Games") return [value, name];
-                    return [`${value} pts`, "Points"];
+                  formatter={(value, name) => {
+                    const safeValue = Number(value ?? 0);
+                    if (String(name) === "Games") return [safeValue, String(name)];
+                    return [`${safeValue} pts`, "Points"];
                   }}
                 />
                 <Bar dataKey="points" name="Points" radius={[0, 4, 4, 0]} barSize={20}>
@@ -639,21 +565,12 @@ function AllPlayersView({
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          </div>
-        </div>
-      )}
+          </DashboardPanel>
+        )}
 
-      {/* Top Players by Accuracy */}
-      {topByAccuracy.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">
-            Top Players by Accuracy{" "}
-            <span className="text-sm text-gray-500 font-normal">
-              (min 5 shots)
-            </span>
-          </h2>
-          <div className="bg-gray-800/50 rounded-xl p-2">
-            <ResponsiveContainer width="100%" height={Math.max(180, topByAccuracy.length * 40 + 40)}>
+        {topByAccuracy.length > 0 && (
+          <DashboardPanel title="Top Players by Accuracy (min 5 shots)" className="lg:col-span-4">
+            <ResponsiveContainer width="100%" height={240}>
               <BarChart
                 layout="vertical"
                 data={topByAccuracy.map((id) => {
@@ -673,7 +590,7 @@ function AllPlayersView({
                   contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
                   labelStyle={{ color: "#f3f4f6" }}
                   itemStyle={{ color: "#d1d5db" }}
-                  formatter={(value: number) => [`${value}%`, "Accuracy"]}
+                  formatter={(value) => [`${Number(value ?? 0)}%`, "Accuracy"]}
                 />
                 <Bar dataKey="accuracy" name="Accuracy" radius={[0, 4, 4, 0]} barSize={20}>
                   {topByAccuracy.map((id) => {
@@ -684,14 +601,10 @@ function AllPlayersView({
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          </div>
-        </div>
-      )}
+          </DashboardPanel>
+        )}
 
-      {/* Recent Games */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Recent Games</h2>
-        <div className="space-y-2">
+        <DashboardPanel title="Recent Games" className="lg:col-span-4" bodyClassName="space-y-2 overflow-y-auto max-h-[320px]">
           {recentGames.map((sess) => {
             const date = sess.startTime?.toDate?.();
             const dateStr = date
@@ -749,9 +662,27 @@ function AllPlayersView({
               </button>
             );
           })}
-        </div>
+        </DashboardPanel>
+
+        {gamePointsTrend.length > 1 && (
+          <DashboardPanel title="Points Trend" className="lg:col-span-8">
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={gamePointsTrend} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="label" tick={{ fill: "#9ca3af", fontSize: 11 }} />
+                <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                  labelStyle={{ color: "#f3f4f6" }}
+                  itemStyle={{ color: "#d1d5db" }}
+                />
+                <Line type="monotone" dataKey="points" name="Points" stroke="#60a5fa" strokeWidth={2.5} dot={{ fill: "#60a5fa", r: 4 }} activeDot={{ r: 6 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </DashboardPanel>
+        )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -799,8 +730,6 @@ function PlayerView({
   const zonePoints: Record<number, number> = {};
   for (let z = 1; z <= 6; z++)
     zonePoints[z] = zoneData[z].makes * ZONE_POINTS[z];
-  const maxZonePoints = Math.max(...Object.values(zonePoints), 1);
-
   const zoneAccuracy: Record<number, number> = {};
   for (let z = 1; z <= 6; z++) {
     const total = zoneData[z].makes + zoneData[z].misses;
@@ -811,8 +740,6 @@ function PlayerView({
   const zoneShotCounts: Record<number, number> = {};
   for (let z = 1; z <= 6; z++)
     zoneShotCounts[z] = zoneData[z].makes + zoneData[z].misses;
-  const maxZoneShots = Math.max(...Object.values(zoneShotCounts), 1);
-
   const totalShots = playerShots.length;
   const totalMakes = playerShots.filter((s) => s.result === "make").length;
   const totalPoints = playerShots.reduce((sum, s) => sum + s.pointsEarned, 0);
@@ -854,8 +781,6 @@ function PlayerView({
       return 0;
     })
     .slice(-12);
-  const maxTrendPts = Math.max(...gameTrend.map((g) => g.points), 1);
-
   // Per-game accuracy trend
   const accTrend = gameIds
     .map((gid) => {
@@ -872,15 +797,15 @@ function PlayerView({
     .slice(-12);
 
   return (
-    <>
+    <div>
       {/* Player header */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-4">
         <p className="text-sm text-gray-400">Lifetime stats for</p>
         <p className="text-3xl font-bold">{playerId}</p>
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2 mb-4">
         <StatCard
           value={playerSessions.length}
           label="Games Played"
@@ -919,48 +844,38 @@ function PlayerView({
         />
       </div>
 
-      {/* Heatmap */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3 text-center">Shot Heatmap</h2>
-        <div className="max-w-md mx-auto">
-          <ZoneGrid mode="heatmap" zoneData={zoneData} />
-          <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
-            <span>0%</span>
-            <div
-              className="h-3 w-32 rounded"
-              style={{
-                background:
-                  "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))",
-              }}
-            />
-            <span>100%</span>
-            <span className="flex items-center gap-1 ml-2">
-              <span className="w-3 h-3 bg-gray-800 rounded border border-gray-700" />{" "}
-              No shots
-            </span>
+      <div className="grid gap-4 lg:grid-cols-12">
+        <DashboardPanel title="Player Heatmap" className="lg:col-span-4">
+          <div className="max-w-sm mx-auto">
+            <ZoneGrid mode="heatmap" zoneData={zoneData} />
+            <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
+              <span>0%</span>
+              <div
+                className="h-3 w-24 rounded"
+                style={{
+                  background:
+                    "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))",
+                }}
+              />
+              <span>100%</span>
+            </div>
           </div>
-        </div>
-      </div>
+          <div className="grid grid-cols-2 gap-2 mt-3">
+            <div className="bg-gray-800 rounded-lg p-2 text-center">
+              <p className="text-sm text-gray-400">Best Zone</p>
+              <p className="text-xl font-bold text-green-400">Z{bestZone}</p>
+              <p className="text-[11px] text-gray-500">{bestZoneAcc}%</p>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-2 text-center">
+              <p className="text-sm text-gray-400">Favorite Zone</p>
+              <p className="text-xl font-bold text-blue-400">Z{favZone}</p>
+              <p className="text-[11px] text-gray-500">{favCount} shots</p>
+            </div>
+          </div>
+        </DashboardPanel>
 
-      {/* Zone Insights */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
-        <div className="bg-gray-800 rounded-xl p-4 text-center">
-          <p className="text-sm text-gray-400 mb-1">Best Zone</p>
-          <p className="text-2xl font-bold text-green-400">Zone {bestZone}</p>
-          <p className="text-xs text-gray-500">{bestZoneAcc}% accuracy</p>
-        </div>
-        <div className="bg-gray-800 rounded-xl p-4 text-center">
-          <p className="text-sm text-gray-400 mb-1">Favorite Zone</p>
-          <p className="text-2xl font-bold text-blue-400">Zone {favZone}</p>
-          <p className="text-xs text-gray-500">{favCount} shots</p>
-        </div>
-      </div>
-
-      {/* Zone Accuracy Radar */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Zone Accuracy</h2>
-        <div className="bg-gray-800/50 rounded-xl p-2">
-          <ResponsiveContainer width="100%" height={300}>
+        <DashboardPanel title="Zone Accuracy" className="lg:col-span-4">
+          <ResponsiveContainer width="100%" height={250}>
             <RadarChart
               data={[1, 2, 3, 4, 5, 6].map((z) => ({
                 zone: `Zone ${z} (${ZONE_POINTS[z]}pt)`,
@@ -975,17 +890,13 @@ function PlayerView({
                 contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
                 labelStyle={{ color: "#f3f4f6" }}
                 itemStyle={{ color: "#d1d5db" }}
-                formatter={(value: number) => [`${value}%`]}
+                formatter={(value) => [`${value ?? 0}%`]}
               />
             </RadarChart>
           </ResponsiveContainer>
-        </div>
-      </div>
+        </DashboardPanel>
 
-      {/* Zone Breakdown */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Zone Breakdown</h2>
-        <div className="bg-gray-800/50 rounded-xl p-2">
+        <DashboardPanel title="Zone Breakdown" className="lg:col-span-4">
           <ResponsiveContainer width="100%" height={250}>
             <BarChart
               data={[1, 2, 3, 4, 5, 6].map((z) => ({
@@ -1009,14 +920,10 @@ function PlayerView({
               <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
             </BarChart>
           </ResponsiveContainer>
-        </div>
-      </div>
+        </DashboardPanel>
 
-      {/* Points & Accuracy Per Game Trends */}
-      {gameTrend.length > 1 && (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">Performance Trend</h2>
-          <div className="bg-gray-800/50 rounded-xl p-2">
+        {gameTrend.length > 1 && (
+          <DashboardPanel title="Performance Trend" className="lg:col-span-8">
             <ResponsiveContainer width="100%" height={240}>
               <LineChart
                 data={gameTrend.map((g, i) => ({
@@ -1034,9 +941,10 @@ function PlayerView({
                   contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
                   labelStyle={{ color: "#f3f4f6" }}
                   itemStyle={{ color: "#d1d5db" }}
-                  formatter={(value: number, name: string) => {
-                    if (name === "Accuracy") return [`${value}%`, name];
-                    return [value, name];
+                  formatter={(value, name) => {
+                    const safeValue = Number(value ?? 0);
+                    if (String(name) === "Accuracy") return [`${safeValue}%`, "Accuracy"];
+                    return [safeValue, String(name)];
                   }}
                 />
                 <Legend wrapperStyle={{ fontSize: 12, color: "#9ca3af" }} />
@@ -1044,14 +952,10 @@ function PlayerView({
                 <Line yAxisId="acc" type="monotone" dataKey="accuracy" name="Accuracy" stroke="#06b6d4" strokeWidth={2} dot={{ fill: "#06b6d4", r: 4 }} activeDot={{ r: 6 }} strokeDasharray="5 5" />
               </LineChart>
             </ResponsiveContainer>
-          </div>
-        </div>
-      )}
+          </DashboardPanel>
+        )}
 
-      {/* Game History */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Game History</h2>
-        <div className="space-y-2">
+        <DashboardPanel title="Game History" className="lg:col-span-4" bodyClassName="space-y-2 overflow-y-auto max-h-[320px]">
           {playerSessions
             .slice(0, 10)
             .map((sess) => {
@@ -1115,9 +1019,9 @@ function PlayerView({
                 </button>
               );
             })}
-        </div>
+        </DashboardPanel>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -1135,9 +1039,28 @@ function StatCard({
   color: string;
 }) {
   return (
-    <div className="bg-gray-800 rounded-xl p-3 text-center">
-      <p className={`text-2xl font-bold ${color}`}>{value}</p>
-      <p className="text-xs text-gray-400">{label}</p>
+    <div className="bg-gray-800 rounded-lg p-2 text-center">
+      <p className={`text-xl font-bold ${color}`}>{value}</p>
+      <p className="text-[11px] text-gray-400">{label}</p>
     </div>
+  );
+}
+
+function DashboardPanel({
+  title,
+  className = "",
+  bodyClassName = "",
+  children,
+}: {
+  title: string;
+  className?: string;
+  bodyClassName?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className={`bg-gray-900/75 border border-gray-800 rounded-xl p-3 ${className}`}>
+      <h2 className="text-sm font-semibold text-gray-200 mb-2 tracking-wide">{title}</h2>
+      <div className={bodyClassName}>{children}</div>
+    </section>
   );
 }
