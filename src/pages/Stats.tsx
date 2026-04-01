@@ -140,7 +140,6 @@ export default function Stats() {
   for (let z = 1; z <= 6; z++) {
     zonePoints[z] = zoneData[z].makes * ZONE_POINTS[z];
   }
-  const maxZonePoints = Math.max(...Object.values(zonePoints), 1);
 
   // Team stats
   let team1Points = 0;
@@ -302,9 +301,11 @@ export default function Stats() {
                 contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
                 labelStyle={{ color: "#f3f4f6" }}
                 itemStyle={{ color: "#d1d5db" }}
-                formatter={(value: number, name: string) => {
-                  if (name === "Accuracy") return [`${value}%`, name];
-                  return [value, name];
+                formatter={(value, name) => {
+                  if (name === "Accuracy" && typeof value === "number") {
+                    return [`${value}%`, name];
+                  }
+                  return [value ?? "-", name];
                 }}
               />
               <Legend wrapperStyle={{ fontSize: 12, color: "#9ca3af" }} />
