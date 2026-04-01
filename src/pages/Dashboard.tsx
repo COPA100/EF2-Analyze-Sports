@@ -12,6 +12,28 @@ import { ZONE_POINTS } from "../lib/scoring";
 
 import type { GameSession, Shot } from "../types";
 import ZoneGrid from "../components/ZoneGrid";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  Legend,
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+} from "recharts";
 
 type View = "all" | "player";
 
@@ -495,100 +517,61 @@ function AllPlayersView({
         </div>
       </div>
 
-      {/* Zone Accuracy Bars */}
+      {/* Zone Accuracy Radar */}
       <div className="mb-8">
         <h2 className="text-lg font-semibold mb-3">Zone Accuracy</h2>
-        <div className="space-y-2">
-          {[1, 2, 3, 4, 5, 6].map((z) => {
-            const total = zoneData[z].makes + zoneData[z].misses;
-            const acc = zoneAccuracy[z];
-            return (
-              <div key={z} className="flex items-center gap-3">
-                <span className="w-16 text-sm text-gray-400">
-                  Zone {z}{" "}
-                  <span className="text-gray-600">({ZONE_POINTS[z]}pt)</span>
-                </span>
-                <div className="flex items-center gap-2 flex-1">
-                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                    {acc > 0 && (
-                      <div
-                        className={`h-full rounded-full transition-all ${
-                          acc >= 66
-                            ? "bg-green-600"
-                            : acc >= 33
-                              ? "bg-orange-500"
-                              : "bg-red-600"
-                        }`}
-                        style={{ width: `${acc}%` }}
-                      />
-                    )}
-                  </div>
-                  <span className="text-xs font-bold w-10 text-right text-gray-300">
-                    {total > 0 ? `${acc}%` : ""}
-                  </span>
-                </div>
-                <span className="text-xs text-gray-500 w-14 text-right">
-                  {zoneData[z].makes}/{total}
-                </span>
-              </div>
-            );
-          })}
+        <div className="bg-gray-800/50 rounded-xl p-2">
+          <ResponsiveContainer width="100%" height={300}>
+            <RadarChart
+              data={[1, 2, 3, 4, 5, 6].map((z) => ({
+                zone: `Zone ${z} (${ZONE_POINTS[z]}pt)`,
+                accuracy: zoneAccuracy[z],
+                volume: zoneShotCounts[z],
+              }))}
+            >
+              <PolarGrid stroke="#374151" />
+              <PolarAngleAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 11 }} />
+              <PolarRadiusAxis tick={{ fill: "#6b7280", fontSize: 10 }} domain={[0, 100]} />
+              <Radar name="Accuracy %" dataKey="accuracy" stroke="#22c55e" fill="#22c55e" fillOpacity={0.25} />
+              <Legend wrapperStyle={{ fontSize: 12, color: "#9ca3af" }} />
+              <Tooltip
+                contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                labelStyle={{ color: "#f3f4f6" }}
+                itemStyle={{ color: "#d1d5db" }}
+                formatter={(value: number) => [`${value}%`]}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Points by Zone */}
+      {/* Zone Breakdown — Points + Makes/Misses */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Points by Zone</h2>
-        <div className="space-y-2">
-          {[1, 2, 3, 4, 5, 6].map((z) => {
-            const pct = (zonePoints[z] / maxZonePoints) * 100;
-            return (
-              <div key={z} className="flex items-center gap-3">
-                <span className="w-16 text-sm text-gray-400">Zone {z}</span>
-                <div className="flex items-center gap-2 flex-1">
-                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                    {pct > 0 && (
-                      <div
-                        className="bg-blue-500 h-full rounded-full transition-all"
-                        style={{ width: `${pct}%` }}
-                      />
-                    )}
-                  </div>
-                  <span className="text-xs font-bold w-8 text-right text-gray-300">
-                    {zonePoints[z] > 0 ? zonePoints[z] : ""}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Shot Volume by Zone */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Shot Volume by Zone</h2>
-        <div className="space-y-2">
-          {[1, 2, 3, 4, 5, 6].map((z) => {
-            const pct = (zoneShotCounts[z] / maxZoneShots) * 100;
-            return (
-              <div key={z} className="flex items-center gap-3">
-                <span className="w-16 text-sm text-gray-400">Zone {z}</span>
-                <div className="flex items-center gap-2 flex-1">
-                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                    {pct > 0 && (
-                      <div
-                        className="bg-purple-500 h-full rounded-full transition-all"
-                        style={{ width: `${pct}%` }}
-                      />
-                    )}
-                  </div>
-                  <span className="text-xs font-bold w-8 text-right text-gray-300">
-                    {zoneShotCounts[z] > 0 ? zoneShotCounts[z] : ""}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+        <h2 className="text-lg font-semibold mb-3">Zone Breakdown</h2>
+        <div className="bg-gray-800/50 rounded-xl p-2">
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart
+              data={[1, 2, 3, 4, 5, 6].map((z) => ({
+                zone: `Z${z}`,
+                makes: zoneData[z].makes,
+                misses: zoneData[z].misses,
+                points: zonePoints[z],
+              }))}
+              margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 12 }} />
+              <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+              <Tooltip
+                contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                labelStyle={{ color: "#f3f4f6" }}
+                itemStyle={{ color: "#d1d5db" }}
+              />
+              <Legend wrapperStyle={{ fontSize: 12, color: "#9ca3af" }} />
+              <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={[4, 4, 0, 0]} stackId="shots" />
+              <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
@@ -598,32 +581,26 @@ function AllPlayersView({
           <h2 className="text-lg font-semibold mb-3">
             Points Per Game Trend
           </h2>
-          <div className="bg-gray-800 rounded-xl p-4">
-            <div className="flex gap-1">
-              {gamePointsTrend.map((g, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
-                  <span className="text-xs text-gray-300 mb-1">
-                    {g.points}
-                  </span>
-                  <div className="w-full h-32 flex items-end">
-                    <div
-                      className="w-full bg-blue-500 rounded-t transition-all cursor-pointer hover:bg-blue-400"
-                      style={{
-                        height: `${(g.points / maxTrendPoints) * 100}%`,
-                        minHeight: g.points > 0 ? "4px" : 0,
-                      }}
-                      title={`Game: ${g.points} pts`}
-                      onClick={() =>
-                        g.gameId && navigate(`/stats/${g.gameId}`)
-                      }
-                    />
-                  </div>
-                  <span className="text-[10px] text-gray-500 mt-1">
-                    {g.label}
-                  </span>
-                </div>
-              ))}
-            </div>
+          <div className="bg-gray-800/50 rounded-xl p-2">
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={gamePointsTrend} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="pointsGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="label" tick={{ fill: "#9ca3af", fontSize: 11 }} />
+                <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                  labelStyle={{ color: "#f3f4f6" }}
+                  itemStyle={{ color: "#d1d5db" }}
+                />
+                <Area type="monotone" dataKey="points" name="Points" stroke="#3b82f6" fill="url(#pointsGradient)" strokeWidth={2} dot={{ fill: "#3b82f6", r: 4 }} activeDot={{ r: 6 }} />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
       )}
@@ -634,37 +611,36 @@ function AllPlayersView({
           <h2 className="text-lg font-semibold mb-3">
             Top Players by Points
           </h2>
-          <div className="space-y-2">
-            {topByPoints.map((id, i) => {
-              const ps = playerStats[id];
-              const maxPts = playerStats[topByPoints[0]].points || 1;
-              return (
-                <div key={id} className="flex items-center gap-3">
-                  <span className="w-6 text-sm text-gray-500 text-right">
-                    {i + 1}.
-                  </span>
-                  <span className="w-24 text-sm text-gray-300 truncate">
-                    {id}
-                  </span>
-                  <div className="flex items-center gap-2 flex-1">
-                    <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                      {ps.points > 0 && (
-                        <div
-                          className="bg-yellow-500 h-full rounded-full transition-all"
-                          style={{ width: `${(ps.points / maxPts) * 100}%` }}
-                        />
-                      )}
-                    </div>
-                    <span className="text-xs font-bold text-yellow-400 shrink-0">
-                      {ps.points} pts
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-500 w-16 text-right">
-                    {ps.games} game{ps.games !== 1 ? "s" : ""}
-                  </span>
-                </div>
-              );
-            })}
+          <div className="bg-gray-800/50 rounded-xl p-2">
+            <ResponsiveContainer width="100%" height={Math.max(180, topByPoints.length * 40 + 40)}>
+              <BarChart
+                layout="vertical"
+                data={topByPoints.map((id) => ({
+                  name: id,
+                  points: playerStats[id].points,
+                  games: playerStats[id].games,
+                }))}
+                margin={{ top: 5, right: 30, left: 5, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis type="number" tick={{ fill: "#6b7280", fontSize: 11 }} />
+                <YAxis type="category" dataKey="name" tick={{ fill: "#d1d5db", fontSize: 12 }} width={70} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                  labelStyle={{ color: "#f3f4f6" }}
+                  itemStyle={{ color: "#d1d5db" }}
+                  formatter={(value: number, name: string) => {
+                    if (name === "Games") return [value, name];
+                    return [`${value} pts`, "Points"];
+                  }}
+                />
+                <Bar dataKey="points" name="Points" radius={[0, 4, 4, 0]} barSize={20}>
+                  {topByPoints.map((_, i) => (
+                    <Cell key={i} fill={i === 0 ? "#eab308" : i === 1 ? "#9ca3af" : i === 2 ? "#f97316" : "#3b82f6"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       )}
@@ -678,43 +654,38 @@ function AllPlayersView({
               (min 5 shots)
             </span>
           </h2>
-          <div className="space-y-2">
-            {topByAccuracy.map((id, i) => {
-              const ps = playerStats[id];
-              const acc = Math.round((ps.makes / ps.shots) * 100);
-              return (
-                <div key={id} className="flex items-center gap-3">
-                  <span className="w-6 text-sm text-gray-500 text-right">
-                    {i + 1}.
-                  </span>
-                  <span className="w-24 text-sm text-gray-300 truncate">
-                    {id}
-                  </span>
-                  <div className="flex items-center gap-2 flex-1">
-                    <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                      {acc > 0 && (
-                        <div
-                          className={`h-full rounded-full transition-all ${
-                            acc >= 66
-                              ? "bg-green-500"
-                              : acc >= 33
-                                ? "bg-orange-500"
-                                : "bg-red-500"
-                          }`}
-                          style={{ width: `${acc}%` }}
-                        />
-                      )}
-                    </div>
-                    <span className="text-xs font-bold text-gray-300 shrink-0">
-                      {acc}%
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-500 w-14 text-right">
-                    {ps.makes}/{ps.shots}
-                  </span>
-                </div>
-              );
-            })}
+          <div className="bg-gray-800/50 rounded-xl p-2">
+            <ResponsiveContainer width="100%" height={Math.max(180, topByAccuracy.length * 40 + 40)}>
+              <BarChart
+                layout="vertical"
+                data={topByAccuracy.map((id) => {
+                  const ps = playerStats[id];
+                  return {
+                    name: id,
+                    accuracy: Math.round((ps.makes / ps.shots) * 100),
+                    detail: `${ps.makes}/${ps.shots}`,
+                  };
+                })}
+                margin={{ top: 5, right: 30, left: 5, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis type="number" domain={[0, 100]} tick={{ fill: "#6b7280", fontSize: 11 }} />
+                <YAxis type="category" dataKey="name" tick={{ fill: "#d1d5db", fontSize: 12 }} width={70} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                  labelStyle={{ color: "#f3f4f6" }}
+                  itemStyle={{ color: "#d1d5db" }}
+                  formatter={(value: number) => [`${value}%`, "Accuracy"]}
+                />
+                <Bar dataKey="accuracy" name="Accuracy" radius={[0, 4, 4, 0]} barSize={20}>
+                  {topByAccuracy.map((id) => {
+                    const ps = playerStats[id];
+                    const acc = Math.round((ps.makes / ps.shots) * 100);
+                    return <Cell key={id} fill={acc >= 66 ? "#22c55e" : acc >= 33 ? "#f97316" : "#ef4444"} />;
+                  })}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       )}
