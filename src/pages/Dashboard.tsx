@@ -587,26 +587,25 @@ function AllPlayersView({
             Points Per Game Trend
           </h2>
           <div className="bg-gray-800 rounded-xl p-4">
-            <div className="flex items-end gap-1 h-32">
+            <div className="flex gap-1">
               {gamePointsTrend.map((g, i) => (
-                <div
-                  key={i}
-                  className="flex-1 flex flex-col items-center justify-end h-full"
-                >
+                <div key={i} className="flex-1 flex flex-col items-center">
                   <span className="text-xs text-gray-300 mb-1">
                     {g.points}
                   </span>
-                  <div
-                    className="w-full bg-blue-500 rounded-t transition-all cursor-pointer hover:bg-blue-400"
-                    style={{
-                      height: `${(g.points / maxTrendPoints) * 100}%`,
-                      minHeight: g.points > 0 ? "4px" : 0,
-                    }}
-                    title={`Game: ${g.points} pts`}
-                    onClick={() =>
-                      g.gameId && navigate(`/stats/${g.gameId}`)
-                    }
-                  />
+                  <div className="w-full h-32 flex items-end">
+                    <div
+                      className="w-full bg-blue-500 rounded-t transition-all cursor-pointer hover:bg-blue-400"
+                      style={{
+                        height: `${(g.points / maxTrendPoints) * 100}%`,
+                        minHeight: g.points > 0 ? "4px" : 0,
+                      }}
+                      title={`Game: ${g.points} pts`}
+                      onClick={() =>
+                        g.gameId && navigate(`/stats/${g.gameId}`)
+                      }
+                    />
+                  </div>
                   <span className="text-[10px] text-gray-500 mt-1">
                     {g.label}
                   </span>
@@ -1051,26 +1050,25 @@ function PlayerView({
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-3">Points Per Game</h2>
           <div className="bg-gray-800 rounded-xl p-4">
-            <div className="flex items-end gap-1 h-32">
+            <div className="flex gap-1">
               {gameTrend.map((g, i) => (
-                <div
-                  key={i}
-                  className="flex-1 flex flex-col items-center justify-end h-full"
-                >
+                <div key={i} className="flex-1 flex flex-col items-center">
                   <span className="text-xs text-gray-300 mb-1">
                     {g.points}
                   </span>
-                  <div
-                    className="w-full bg-yellow-500 rounded-t transition-all cursor-pointer hover:bg-yellow-400"
-                    style={{
-                      height: `${(g.points / maxTrendPts) * 100}%`,
-                      minHeight: g.points > 0 ? "4px" : 0,
-                    }}
-                    title={`${g.points} pts`}
-                    onClick={() =>
-                      g.gameId && navigate(`/stats/${g.gameId}`)
-                    }
-                  />
+                  <div className="w-full h-32 flex items-end">
+                    <div
+                      className="w-full bg-yellow-500 rounded-t transition-all cursor-pointer hover:bg-yellow-400"
+                      style={{
+                        height: `${(g.points / maxTrendPts) * 100}%`,
+                        minHeight: g.points > 0 ? "4px" : 0,
+                      }}
+                      title={`${g.points} pts`}
+                      onClick={() =>
+                        g.gameId && navigate(`/stats/${g.gameId}`)
+                      }
+                    />
+                  </div>
                   <span className="text-[10px] text-gray-500 mt-1">
                     G{i + 1}
                   </span>
@@ -1086,31 +1084,30 @@ function PlayerView({
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-3">Accuracy Per Game</h2>
           <div className="bg-gray-800 rounded-xl p-4">
-            <div className="flex items-end gap-1 h-32">
+            <div className="flex gap-1">
               {accTrend.map((g, i) => (
-                <div
-                  key={i}
-                  className="flex-1 flex flex-col items-center justify-end h-full"
-                >
+                <div key={i} className="flex-1 flex flex-col items-center">
                   <span className="text-xs text-gray-300 mb-1">
                     {g.accuracy}%
                   </span>
-                  <div
-                    className={`w-full rounded-t transition-all cursor-pointer ${
-                      g.accuracy >= 66
-                        ? "bg-green-500 hover:bg-green-400"
-                        : g.accuracy >= 33
-                          ? "bg-orange-500 hover:bg-orange-400"
-                          : "bg-red-500 hover:bg-red-400"
-                    }`}
-                    style={{
-                      height: `${g.accuracy}%`,
-                      minHeight: g.accuracy > 0 ? "4px" : 0,
-                    }}
-                    onClick={() =>
-                      g.gameId && navigate(`/stats/${g.gameId}`)
-                    }
-                  />
+                  <div className="w-full h-32 flex items-end">
+                    <div
+                      className={`w-full rounded-t transition-all cursor-pointer ${
+                        g.accuracy >= 66
+                          ? "bg-green-500 hover:bg-green-400"
+                          : g.accuracy >= 33
+                            ? "bg-orange-500 hover:bg-orange-400"
+                            : "bg-red-500 hover:bg-red-400"
+                      }`}
+                      style={{
+                        height: `${g.accuracy}%`,
+                        minHeight: g.accuracy > 0 ? "4px" : 0,
+                      }}
+                      onClick={() =>
+                        g.gameId && navigate(`/stats/${g.gameId}`)
+                      }
+                    />
+                  </div>
                   <span className="text-[10px] text-gray-500 mt-1">
                     G{i + 1}
                   </span>
