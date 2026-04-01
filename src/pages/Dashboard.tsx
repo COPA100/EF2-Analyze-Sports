@@ -519,7 +519,7 @@ function AllPlayersView({
                     }`}
                     style={{
                       width: `${acc}%`,
-                      minWidth: total > 0 ? "3rem" : 0,
+                      minWidth: acc > 0 ? "3rem" : 0,
                     }}
                   >
                     {total > 0 ? `${acc}%` : ""}
@@ -983,7 +983,7 @@ function PlayerView({
                     }`}
                     style={{
                       width: `${acc}%`,
-                      minWidth: total > 0 ? "3rem" : 0,
+                      minWidth: acc > 0 ? "3rem" : 0,
                     }}
                   >
                     {total > 0 ? `${acc}%` : ""}
