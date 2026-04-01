@@ -958,172 +958,94 @@ function PlayerView({
         </div>
       </div>
 
-      {/* Zone Accuracy */}
+      {/* Zone Accuracy Radar */}
       <div className="mb-8">
         <h2 className="text-lg font-semibold mb-3">Zone Accuracy</h2>
-        <div className="space-y-2">
-          {[1, 2, 3, 4, 5, 6].map((z) => {
-            const total = zoneData[z].makes + zoneData[z].misses;
-            const acc = zoneAccuracy[z];
-            return (
-              <div key={z} className="flex items-center gap-3">
-                <span className="w-16 text-sm text-gray-400">
-                  Zone {z}{" "}
-                  <span className="text-gray-600">({ZONE_POINTS[z]}pt)</span>
-                </span>
-                <div className="flex items-center gap-2 flex-1">
-                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                    {acc > 0 && (
-                      <div
-                        className={`h-full rounded-full transition-all ${
-                          acc >= 66
-                            ? "bg-green-600"
-                            : acc >= 33
-                              ? "bg-orange-500"
-                              : "bg-red-600"
-                        }`}
-                        style={{ width: `${acc}%` }}
-                      />
-                    )}
-                  </div>
-                  <span className="text-xs font-bold w-10 text-right text-gray-300">
-                    {total > 0 ? `${acc}%` : ""}
-                  </span>
-                </div>
-                <span className="text-xs text-gray-500 w-14 text-right">
-                  {zoneData[z].makes}/{total}
-                </span>
-              </div>
-            );
-          })}
+        <div className="bg-gray-800/50 rounded-xl p-2">
+          <ResponsiveContainer width="100%" height={300}>
+            <RadarChart
+              data={[1, 2, 3, 4, 5, 6].map((z) => ({
+                zone: `Zone ${z} (${ZONE_POINTS[z]}pt)`,
+                accuracy: zoneAccuracy[z],
+              }))}
+            >
+              <PolarGrid stroke="#374151" />
+              <PolarAngleAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 11 }} />
+              <PolarRadiusAxis tick={{ fill: "#6b7280", fontSize: 10 }} domain={[0, 100]} />
+              <Radar name="Accuracy %" dataKey="accuracy" stroke="#22c55e" fill="#22c55e" fillOpacity={0.25} />
+              <Tooltip
+                contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                labelStyle={{ color: "#f3f4f6" }}
+                itemStyle={{ color: "#d1d5db" }}
+                formatter={(value: number) => [`${value}%`]}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Points by Zone */}
+      {/* Zone Breakdown */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Points by Zone</h2>
-        <div className="space-y-2">
-          {[1, 2, 3, 4, 5, 6].map((z) => {
-            const pct = (zonePoints[z] / maxZonePoints) * 100;
-            return (
-              <div key={z} className="flex items-center gap-3">
-                <span className="w-16 text-sm text-gray-400">Zone {z}</span>
-                <div className="flex items-center gap-2 flex-1">
-                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                    {pct > 0 && (
-                      <div
-                        className="bg-blue-500 h-full rounded-full transition-all"
-                        style={{ width: `${pct}%` }}
-                      />
-                    )}
-                  </div>
-                  <span className="text-xs font-bold w-8 text-right text-gray-300">
-                    {zonePoints[z] > 0 ? zonePoints[z] : ""}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+        <h2 className="text-lg font-semibold mb-3">Zone Breakdown</h2>
+        <div className="bg-gray-800/50 rounded-xl p-2">
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart
+              data={[1, 2, 3, 4, 5, 6].map((z) => ({
+                zone: `Z${z}`,
+                makes: zoneData[z].makes,
+                misses: zoneData[z].misses,
+                points: zonePoints[z],
+              }))}
+              margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 12 }} />
+              <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+              <Tooltip
+                contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                labelStyle={{ color: "#f3f4f6" }}
+                itemStyle={{ color: "#d1d5db" }}
+              />
+              <Legend wrapperStyle={{ fontSize: 12, color: "#9ca3af" }} />
+              <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={[4, 4, 0, 0]} stackId="shots" />
+              <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Shot Volume by Zone */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Shot Volume by Zone</h2>
-        <div className="space-y-2">
-          {[1, 2, 3, 4, 5, 6].map((z) => {
-            const pct = (zoneShotCounts[z] / maxZoneShots) * 100;
-            return (
-              <div key={z} className="flex items-center gap-3">
-                <span className="w-16 text-sm text-gray-400">Zone {z}</span>
-                <div className="flex items-center gap-2 flex-1">
-                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                    {pct > 0 && (
-                      <div
-                        className="bg-purple-500 h-full rounded-full transition-all"
-                        style={{ width: `${pct}%` }}
-                      />
-                    )}
-                  </div>
-                  <span className="text-xs font-bold w-8 text-right text-gray-300">
-                    {zoneShotCounts[z] > 0 ? zoneShotCounts[z] : ""}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Points Per Game Trend */}
+      {/* Points & Accuracy Per Game Trends */}
       {gameTrend.length > 1 && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">Points Per Game</h2>
-          <div className="bg-gray-800 rounded-xl p-4">
-            <div className="flex gap-1">
-              {gameTrend.map((g, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
-                  <span className="text-xs text-gray-300 mb-1">
-                    {g.points}
-                  </span>
-                  <div className="w-full h-32 flex items-end">
-                    <div
-                      className="w-full bg-yellow-500 rounded-t transition-all cursor-pointer hover:bg-yellow-400"
-                      style={{
-                        height: `${(g.points / maxTrendPts) * 100}%`,
-                        minHeight: g.points > 0 ? "4px" : 0,
-                      }}
-                      title={`${g.points} pts`}
-                      onClick={() =>
-                        g.gameId && navigate(`/stats/${g.gameId}`)
-                      }
-                    />
-                  </div>
-                  <span className="text-[10px] text-gray-500 mt-1">
-                    G{i + 1}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Accuracy Per Game Trend */}
-      {accTrend.length > 1 && (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">Accuracy Per Game</h2>
-          <div className="bg-gray-800 rounded-xl p-4">
-            <div className="flex gap-1">
-              {accTrend.map((g, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
-                  <span className="text-xs text-gray-300 mb-1">
-                    {g.accuracy}%
-                  </span>
-                  <div className="w-full h-32 flex items-end">
-                    <div
-                      className={`w-full rounded-t transition-all cursor-pointer ${
-                        g.accuracy >= 66
-                          ? "bg-green-500 hover:bg-green-400"
-                          : g.accuracy >= 33
-                            ? "bg-orange-500 hover:bg-orange-400"
-                            : "bg-red-500 hover:bg-red-400"
-                      }`}
-                      style={{
-                        height: `${g.accuracy}%`,
-                        minHeight: g.accuracy > 0 ? "4px" : 0,
-                      }}
-                      onClick={() =>
-                        g.gameId && navigate(`/stats/${g.gameId}`)
-                      }
-                    />
-                  </div>
-                  <span className="text-[10px] text-gray-500 mt-1">
-                    G{i + 1}
-                  </span>
-                </div>
-              ))}
-            </div>
+          <h2 className="text-lg font-semibold mb-3">Performance Trend</h2>
+          <div className="bg-gray-800/50 rounded-xl p-2">
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart
+                data={gameTrend.map((g, i) => ({
+                  game: `G${i + 1}`,
+                  points: g.points,
+                  accuracy: accTrend[i]?.accuracy ?? 0,
+                }))}
+                margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="game" tick={{ fill: "#9ca3af", fontSize: 11 }} />
+                <YAxis yAxisId="pts" tick={{ fill: "#6b7280", fontSize: 11 }} />
+                <YAxis yAxisId="acc" orientation="right" domain={[0, 100]} tick={{ fill: "#6b7280", fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                  labelStyle={{ color: "#f3f4f6" }}
+                  itemStyle={{ color: "#d1d5db" }}
+                  formatter={(value: number, name: string) => {
+                    if (name === "Accuracy") return [`${value}%`, name];
+                    return [value, name];
+                  }}
+                />
+                <Legend wrapperStyle={{ fontSize: 12, color: "#9ca3af" }} />
+                <Line yAxisId="pts" type="monotone" dataKey="points" name="Points" stroke="#eab308" strokeWidth={2} dot={{ fill: "#eab308", r: 4 }} activeDot={{ r: 6 }} />
+                <Line yAxisId="acc" type="monotone" dataKey="accuracy" name="Accuracy" stroke="#06b6d4" strokeWidth={2} dot={{ fill: "#06b6d4", r: 4 }} activeDot={{ r: 6 }} strokeDasharray="5 5" />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
       )}
