@@ -508,22 +508,24 @@ function AllPlayersView({
                   Zone {z}{" "}
                   <span className="text-gray-600">({ZONE_POINTS[z]}pt)</span>
                 </span>
-                <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold transition-all ${
-                      acc >= 66
-                        ? "bg-green-600"
-                        : acc >= 33
-                          ? "bg-orange-500"
-                          : "bg-red-600"
-                    }`}
-                    style={{
-                      width: `${acc}%`,
-                      minWidth: acc > 0 ? "3rem" : 0,
-                    }}
-                  >
-                    {total > 0 ? `${acc}%` : ""}
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
+                    {acc > 0 && (
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          acc >= 66
+                            ? "bg-green-600"
+                            : acc >= 33
+                              ? "bg-orange-500"
+                              : "bg-red-600"
+                        }`}
+                        style={{ width: `${acc}%` }}
+                      />
+                    )}
                   </div>
+                  <span className="text-xs font-bold w-10 text-right text-gray-300">
+                    {total > 0 ? `${acc}%` : ""}
+                  </span>
                 </div>
                 <span className="text-xs text-gray-500 w-14 text-right">
                   {zoneData[z].makes}/{total}
@@ -538,22 +540,27 @@ function AllPlayersView({
       <div className="mb-8">
         <h2 className="text-lg font-semibold mb-3">Points by Zone</h2>
         <div className="space-y-2">
-          {[1, 2, 3, 4, 5, 6].map((z) => (
-            <div key={z} className="flex items-center gap-3">
-              <span className="w-16 text-sm text-gray-400">Zone {z}</span>
-              <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                <div
-                  className="bg-blue-500 h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold transition-all"
-                  style={{
-                    width: `${(zonePoints[z] / maxZonePoints) * 100}%`,
-                    minWidth: zonePoints[z] > 0 ? "2rem" : 0,
-                  }}
-                >
-                  {zonePoints[z] > 0 ? zonePoints[z] : ""}
+          {[1, 2, 3, 4, 5, 6].map((z) => {
+            const pct = (zonePoints[z] / maxZonePoints) * 100;
+            return (
+              <div key={z} className="flex items-center gap-3">
+                <span className="w-16 text-sm text-gray-400">Zone {z}</span>
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
+                    {pct > 0 && (
+                      <div
+                        className="bg-blue-500 h-full rounded-full transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    )}
+                  </div>
+                  <span className="text-xs font-bold w-8 text-right text-gray-300">
+                    {zonePoints[z] > 0 ? zonePoints[z] : ""}
+                  </span>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -561,22 +568,27 @@ function AllPlayersView({
       <div className="mb-8">
         <h2 className="text-lg font-semibold mb-3">Shot Volume by Zone</h2>
         <div className="space-y-2">
-          {[1, 2, 3, 4, 5, 6].map((z) => (
-            <div key={z} className="flex items-center gap-3">
-              <span className="w-16 text-sm text-gray-400">Zone {z}</span>
-              <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                <div
-                  className="bg-purple-500 h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold transition-all"
-                  style={{
-                    width: `${(zoneShotCounts[z] / maxZoneShots) * 100}%`,
-                    minWidth: zoneShotCounts[z] > 0 ? "2rem" : 0,
-                  }}
-                >
-                  {zoneShotCounts[z] > 0 ? zoneShotCounts[z] : ""}
+          {[1, 2, 3, 4, 5, 6].map((z) => {
+            const pct = (zoneShotCounts[z] / maxZoneShots) * 100;
+            return (
+              <div key={z} className="flex items-center gap-3">
+                <span className="w-16 text-sm text-gray-400">Zone {z}</span>
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
+                    {pct > 0 && (
+                      <div
+                        className="bg-purple-500 h-full rounded-full transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    )}
+                  </div>
+                  <span className="text-xs font-bold w-8 text-right text-gray-300">
+                    {zoneShotCounts[z] > 0 ? zoneShotCounts[z] : ""}
+                  </span>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -634,16 +646,18 @@ function AllPlayersView({
                   <span className="w-24 text-sm text-gray-300 truncate">
                     {id}
                   </span>
-                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                    <div
-                      className="bg-yellow-500 h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold text-gray-900 transition-all"
-                      style={{
-                        width: `${(ps.points / maxPts) * 100}%`,
-                        minWidth: "3rem",
-                      }}
-                    >
-                      {ps.points} pts
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
+                      {ps.points > 0 && (
+                        <div
+                          className="bg-yellow-500 h-full rounded-full transition-all"
+                          style={{ width: `${(ps.points / maxPts) * 100}%` }}
+                        />
+                      )}
                     </div>
+                    <span className="text-xs font-bold text-yellow-400 shrink-0">
+                      {ps.points} pts
+                    </span>
                   </div>
                   <span className="text-xs text-gray-500 w-16 text-right">
                     {ps.games} game{ps.games !== 1 ? "s" : ""}
@@ -676,22 +690,24 @@ function AllPlayersView({
                   <span className="w-24 text-sm text-gray-300 truncate">
                     {id}
                   </span>
-                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold transition-all ${
-                        acc >= 66
-                          ? "bg-green-500"
-                          : acc >= 33
-                            ? "bg-orange-500"
-                            : "bg-red-500"
-                      }`}
-                      style={{
-                        width: `${acc}%`,
-                        minWidth: "3rem",
-                      }}
-                    >
-                      {acc}%
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
+                      {acc > 0 && (
+                        <div
+                          className={`h-full rounded-full transition-all ${
+                            acc >= 66
+                              ? "bg-green-500"
+                              : acc >= 33
+                                ? "bg-orange-500"
+                                : "bg-red-500"
+                          }`}
+                          style={{ width: `${acc}%` }}
+                        />
+                      )}
                     </div>
+                    <span className="text-xs font-bold text-gray-300 shrink-0">
+                      {acc}%
+                    </span>
                   </div>
                   <span className="text-xs text-gray-500 w-14 text-right">
                     {ps.makes}/{ps.shots}
@@ -984,22 +1000,24 @@ function PlayerView({
                   Zone {z}{" "}
                   <span className="text-gray-600">({ZONE_POINTS[z]}pt)</span>
                 </span>
-                <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold transition-all ${
-                      acc >= 66
-                        ? "bg-green-600"
-                        : acc >= 33
-                          ? "bg-orange-500"
-                          : "bg-red-600"
-                    }`}
-                    style={{
-                      width: `${acc}%`,
-                      minWidth: acc > 0 ? "3rem" : 0,
-                    }}
-                  >
-                    {total > 0 ? `${acc}%` : ""}
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
+                    {acc > 0 && (
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          acc >= 66
+                            ? "bg-green-600"
+                            : acc >= 33
+                              ? "bg-orange-500"
+                              : "bg-red-600"
+                        }`}
+                        style={{ width: `${acc}%` }}
+                      />
+                    )}
                   </div>
+                  <span className="text-xs font-bold w-10 text-right text-gray-300">
+                    {total > 0 ? `${acc}%` : ""}
+                  </span>
                 </div>
                 <span className="text-xs text-gray-500 w-14 text-right">
                   {zoneData[z].makes}/{total}
@@ -1014,22 +1032,27 @@ function PlayerView({
       <div className="mb-8">
         <h2 className="text-lg font-semibold mb-3">Points by Zone</h2>
         <div className="space-y-2">
-          {[1, 2, 3, 4, 5, 6].map((z) => (
-            <div key={z} className="flex items-center gap-3">
-              <span className="w-16 text-sm text-gray-400">Zone {z}</span>
-              <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                <div
-                  className="bg-blue-500 h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold transition-all"
-                  style={{
-                    width: `${(zonePoints[z] / maxZonePoints) * 100}%`,
-                    minWidth: zonePoints[z] > 0 ? "2rem" : 0,
-                  }}
-                >
-                  {zonePoints[z] > 0 ? zonePoints[z] : ""}
+          {[1, 2, 3, 4, 5, 6].map((z) => {
+            const pct = (zonePoints[z] / maxZonePoints) * 100;
+            return (
+              <div key={z} className="flex items-center gap-3">
+                <span className="w-16 text-sm text-gray-400">Zone {z}</span>
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
+                    {pct > 0 && (
+                      <div
+                        className="bg-blue-500 h-full rounded-full transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    )}
+                  </div>
+                  <span className="text-xs font-bold w-8 text-right text-gray-300">
+                    {zonePoints[z] > 0 ? zonePoints[z] : ""}
+                  </span>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -1037,22 +1060,27 @@ function PlayerView({
       <div className="mb-8">
         <h2 className="text-lg font-semibold mb-3">Shot Volume by Zone</h2>
         <div className="space-y-2">
-          {[1, 2, 3, 4, 5, 6].map((z) => (
-            <div key={z} className="flex items-center gap-3">
-              <span className="w-16 text-sm text-gray-400">Zone {z}</span>
-              <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                <div
-                  className="bg-purple-500 h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold transition-all"
-                  style={{
-                    width: `${(zoneShotCounts[z] / maxZoneShots) * 100}%`,
-                    minWidth: zoneShotCounts[z] > 0 ? "2rem" : 0,
-                  }}
-                >
-                  {zoneShotCounts[z] > 0 ? zoneShotCounts[z] : ""}
+          {[1, 2, 3, 4, 5, 6].map((z) => {
+            const pct = (zoneShotCounts[z] / maxZoneShots) * 100;
+            return (
+              <div key={z} className="flex items-center gap-3">
+                <span className="w-16 text-sm text-gray-400">Zone {z}</span>
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
+                    {pct > 0 && (
+                      <div
+                        className="bg-purple-500 h-full rounded-full transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    )}
+                  </div>
+                  <span className="text-xs font-bold w-8 text-right text-gray-300">
+                    {zoneShotCounts[z] > 0 ? zoneShotCounts[z] : ""}
+                  </span>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

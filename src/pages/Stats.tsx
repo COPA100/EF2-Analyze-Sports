@@ -200,16 +200,18 @@ export default function Stats() {
           {[1, 2, 3, 4, 5, 6].map((z) => (
             <div key={z} className="flex items-center gap-3">
               <span className="w-16 text-sm text-gray-400">Zone {z}</span>
-              <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                <div
-                  className="bg-amber-500 h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold text-gray-900 transition-all"
-                  style={{
-                    width: `${(zonePoints[z] / maxZonePoints) * 100}%`,
-                    minWidth: zonePoints[z] > 0 ? "2rem" : 0,
-                  }}
-                >
-                  {zonePoints[z] > 0 ? zonePoints[z] : ""}
+              <div className="flex items-center gap-2 flex-1">
+                <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
+                  {zonePoints[z] > 0 && (
+                    <div
+                      className="bg-amber-500 h-full rounded-full transition-all"
+                      style={{ width: `${(zonePoints[z] / maxZonePoints) * 100}%` }}
+                    />
+                  )}
                 </div>
+                <span className="text-xs font-bold w-8 text-right text-amber-400">
+                  {zonePoints[z] > 0 ? zonePoints[z] : ""}
+                </span>
               </div>
             </div>
           ))}
@@ -241,16 +243,18 @@ export default function Stats() {
             return (
               <div key={id} className="flex items-center gap-3">
                 <span className={`w-24 text-sm truncate ${labelColor}`}>{id}</span>
-                <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
-                  <div
-                    className={`${barColor} h-full rounded-full flex items-center justify-end pr-2 text-xs font-bold transition-all`}
-                    style={{
-                      width: `${pAcc}%`,
-                      minWidth: ps.shots > 0 ? "3rem" : 0,
-                    }}
-                  >
-                    {pAcc}% ({ps.points}pts)
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="flex-1 bg-gray-800 rounded-full h-6 overflow-hidden">
+                    {pAcc > 0 && (
+                      <div
+                        className={`${barColor} h-full rounded-full transition-all`}
+                        style={{ width: `${pAcc}%` }}
+                      />
+                    )}
                   </div>
+                  <span className="text-xs font-bold text-gray-300 shrink-0">
+                    {pAcc}% ({ps.points}pts)
+                  </span>
                 </div>
               </div>
             );

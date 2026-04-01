@@ -287,20 +287,22 @@ export default function Leaderboard() {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex-1 bg-gray-700 rounded-full h-4 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all ${
-                            rank === 1
-                              ? "bg-yellow-500"
-                              : rank === 2
-                                ? "bg-gray-300"
-                                : rank === 3
-                                  ? "bg-orange-600"
-                                  : "bg-blue-500"
-                          }`}
-                          style={{
-                            width: `${barMax > 0 ? (barValue / barMax) * 100 : 0}%`,
-                          }}
-                        />
+                        {barValue > 0 && (
+                          <div
+                            className={`h-full rounded-full transition-all ${
+                              rank === 1
+                                ? "bg-yellow-500"
+                                : rank === 2
+                                  ? "bg-gray-300"
+                                  : rank === 3
+                                    ? "bg-orange-600"
+                                    : "bg-blue-500"
+                            }`}
+                            style={{
+                              width: `${barMax > 0 ? (barValue / barMax) * 100 : 0}%`,
+                            }}
+                          />
+                        )}
                       </div>
                       <span className={`text-[10px] font-bold shrink-0 ${
                         rank === 1
