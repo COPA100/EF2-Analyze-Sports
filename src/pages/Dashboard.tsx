@@ -12,6 +12,7 @@ import { ZONE_POINTS } from "../lib/scoring";
 
 import type { GameSession, Shot } from "../types";
 import BasketballCourtHeatMap, { zoneDataToShots } from "../components/BasketballCourtHeatMap";
+import ZoneGrid from "../components/ZoneGrid";
 import {
   BarChart,
   Bar,
@@ -465,20 +466,25 @@ function AllPlayersView({
         </DashboardPanel>
 
         <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
-          <div className="w-full max-w-[340px] mx-auto">
-            <BasketballCourtHeatMap
-              shots={zoneDataToShots(zoneData)}
-              title=""
-              compact
-              showLegend={false}
-              showZoneStats={false}
-              showQuickInsight={false}
-              courtMaxWidthClass="max-w-[340px]"
-            />
-            <div className="flex items-center justify-center gap-2 mt-2 text-xs text-gray-400">
-              <span>0%</span>
-              <div className="h-3 w-28 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
-              <span>100%</span>
+          <div className="flex items-start justify-center gap-4">
+            <div className="w-full max-w-[240px]">
+              <BasketballCourtHeatMap
+                shots={zoneDataToShots(zoneData)}
+                title=""
+                compact
+                showLegend={false}
+                showZoneStats={false}
+                showQuickInsight={false}
+                courtMaxWidthClass="max-w-[240px]"
+              />
+              <div className="flex items-center justify-center gap-2 mt-2 text-xs text-gray-400">
+                <span>0%</span>
+                <div className="h-3 w-28 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
+                <span>100%</span>
+              </div>
+            </div>
+            <div className="w-full max-w-[240px]">
+              <ZoneGrid mode="heatmap" zoneData={zoneData} />
             </div>
           </div>
         </DashboardPanel>
@@ -783,30 +789,35 @@ function PlayerView({
       </div>
 
       <div className="grid gap-2 lg:grid-cols-12">
-        <DashboardPanel title="Player Heatmap" className="lg:col-span-4">
-          <div className="max-w-[220px] mx-auto">
-            <BasketballCourtHeatMap
-              shots={zoneDataToShots(zoneData)}
-              title=""
-              compact
-              showLegend={false}
-              showZoneStats={false}
-              showQuickInsight={false}
-              courtMaxWidthClass="max-w-[220px]"
-            />
-            <div className="flex items-center justify-center gap-2 mt-1 text-[10px] text-gray-400">
-              <span>0%</span>
-              <div
-                className="h-2 w-16 rounded"
-                style={{
-                  background:
-                    "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))",
-                }}
+        <DashboardPanel title="Player Heatmap" className="lg:col-span-8">
+          <div className="flex items-start justify-center gap-4">
+            <div className="max-w-[220px]">
+              <BasketballCourtHeatMap
+                shots={zoneDataToShots(zoneData)}
+                title=""
+                compact
+                showLegend={false}
+                showZoneStats={false}
+                showQuickInsight={false}
+                courtMaxWidthClass="max-w-[220px]"
               />
-              <span>100%</span>
+              <div className="flex items-center justify-center gap-2 mt-1 text-[10px] text-gray-400">
+                <span>0%</span>
+                <div
+                  className="h-2 w-16 rounded"
+                  style={{
+                    background:
+                      "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))",
+                  }}
+                />
+                <span>100%</span>
+              </div>
+            </div>
+            <div className="max-w-[220px]">
+              <ZoneGrid mode="heatmap" zoneData={zoneData} />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-1 mt-2">
+          <div className="grid grid-cols-2 gap-1 mt-2 max-w-[220px] mx-auto">
             <div className="bg-gray-800 rounded p-1 text-center">
               <p className="text-sm font-bold text-green-400">Z{bestZone}</p>
               <p className="text-[9px] text-gray-500">Best ({bestZoneAcc}%)</p>
