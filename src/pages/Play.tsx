@@ -17,7 +17,7 @@ import {
 import { db } from "../lib/firebase";
 import { getPointsForZone, getNextPlayer } from "../lib/scoring";
 import type { GameSession, Shot } from "../types";
-import DataCollectionScreen from "../components/DataCollectionScreen";
+import ZoneGrid from "../components/ZoneGrid";
 
 interface GameState {
   session: GameSession;
@@ -33,6 +33,7 @@ export default function Play() {
   const navigate = useNavigate();
 
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const [selectedZone, setSelectedZone] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -160,19 +161,19 @@ export default function Play() {
     }
   }, [gameState, gameId, navigate]);
 
-  async function recordShot(zone: number, result: "make" | "miss") {
-    if (!gameState || !zone || saving || !gameId) return;
+  async function recordShot(result: "make" | "miss") {
+    if (!gameState || !selectedZone || saving || !gameId) return;
     setSaving(true);
     setError("");
 
-    const points = result === "make" ? getPointsForZone(zone) : 0;
+    const points = result === "make" ? getPointsForZone(selectedZone) : 0;
     const shotNumber = gameState.shots.length + 1;
 
     const shotData = {
       gameId,
       playerId: gameState.currentPlayerId,
       activityType: gameState.session.activityType,
-      shotFrom: zone,
+      shotFrom: selectedZone,
       result,
       pointsEarned: points,
       shotNumber,
@@ -219,6 +220,7 @@ export default function Play() {
           shots: newShots,
         });
       }
+      setSelectedZone(null);
     } catch (e) {
       setError("Shot not saved — tap to retry.");
       console.error(e);
@@ -278,6 +280,7 @@ export default function Play() {
           shots: newShots,
         });
       }
+      setSelectedZone(null);
     } catch (e) {
       setError("Failed to undo. Try again.");
       console.error(e);
@@ -310,17 +313,109 @@ export default function Play() {
 
   if (!gameState) return null;
 
+  const { session, shots } = gameState;
+  const isTeam = session.activityType === "team";
+
+  // Shot counters
+  let shotDisplay: string;
+  if (isTeam && session.teams) {
+    const t1 = shots.filter((s) => session.teams!.team1.includes(s.playerId)).length;
+    const t2 = shots.filter((s) => session.teams!.team2.includes(s.playerId)).length;
+    shotDisplay = `Team 1: ${t1}/30  |  Team 2: ${t2}/30`;
+  } else {
+    shotDisplay = `Shot ${shots.length + 1} of 20`;
+  }
+
   return (
-    <DataCollectionScreen
-      session={gameState.session}
-      shots={gameState.shots}
-      currentPlayerId={gameState.currentPlayerId}
-      currentTeam={gameState.currentTeam}
-      disabledZone={effectiveDisabledZone}
-      saving={saving}
-      error={error}
-      onRecordShot={recordShot}
-      onUndo={undoLastShot}
-    />
+    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center p-4">
+      {/* Header */}
+      <div className="w-full max-w-md mb-4">
+        <div className="text-center">
+          {isTeam && gameState.currentTeam && (
+            <p
+              className={`text-lg font-semibold ${
+                gameState.currentTeam === "team1"
+                  ? "text-blue-400"
+                  : "text-green-400"
+              }`}
+            >
+              {gameState.currentTeam === "team1" ? "Team 1" : "Team 2"}
+            </p>
+          )}
+          <p className="text-2xl font-bold">{gameState.currentPlayerId}'s turn</p>
+          <p className="text-gray-400 mt-1">{shotDisplay}</p>
+          {/* Progress bar */}
+          {isTeam && session.teams ? (
+            <div className="mt-3 space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-blue-400 w-10">T1</span>
+                <div className="flex-1 bg-gray-800 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-blue-500 h-full rounded-full transition-all"
+                    style={{ width: `${(shots.filter(s => session.teams!.team1.includes(s.playerId)).length / 30) * 100}%` }}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-green-400 w-10">T2</span>
+                <div className="flex-1 bg-gray-800 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-green-500 h-full rounded-full transition-all"
+                    style={{ width: `${(shots.filter(s => session.teams!.team2.includes(s.playerId)).length / 30) * 100}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-3 bg-gray-800 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-blue-500 h-full rounded-full transition-all"
+                style={{ width: `${(shots.length / 20) * 100}%` }}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Error toast */}
+      {error && (
+        <p className="text-red-400 mb-2 text-sm">{error}</p>
+      )}
+
+      {/* Zone Grid */}
+      <ZoneGrid
+        mode="play"
+        onZoneClick={setSelectedZone}
+        selectedZone={selectedZone}
+        disabledZone={effectiveDisabledZone}
+      />
+
+      {/* Make / Miss buttons */}
+      <div className="flex gap-4 mt-6 w-full max-w-md">
+        <button
+          onClick={() => recordShot("make")}
+          disabled={!selectedZone || saving}
+          className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 disabled:text-gray-500 text-white text-xl font-bold py-4 rounded-xl transition-colors"
+        >
+          {saving ? "..." : "Make"}
+        </button>
+        <button
+          onClick={() => recordShot("miss")}
+          disabled={!selectedZone || saving}
+          className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-700 disabled:text-gray-500 text-white text-xl font-bold py-4 rounded-xl transition-colors"
+        >
+          {saving ? "..." : "Miss"}
+        </button>
+      </div>
+
+      {/* Undo button */}
+      <button
+        onClick={undoLastShot}
+        disabled={shots.length === 0 || saving}
+        className="mt-4 text-gray-400 hover:text-white disabled:text-gray-700 text-sm underline transition-colors"
+      >
+        Undo last shot
+      </button>
+    </div>
   );
 }

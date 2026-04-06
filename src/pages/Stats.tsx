@@ -13,8 +13,7 @@ import {
 import { db } from "../lib/firebase";
 import { ZONE_POINTS } from "../lib/scoring";
 import type { GameSession, Shot } from "../types";
-import BasketballCourtHeatMap from "../components/BasketballCourtHeatMap";
-import type { HeatmapShot } from "../components/BasketballCourtHeatMap";
+import ZoneGrid from "../components/ZoneGrid";
 import {
   BarChart,
   Bar,
@@ -191,14 +190,20 @@ export default function Stats() {
       </div>
 
       {/* Heatmap */}
-      <div className="max-w-2xl mx-auto mb-8">
-        <BasketballCourtHeatMap
-          shots={shots.map((s): HeatmapShot => ({ location: String(s.shotFrom), made: s.result === 'make' }))}
-          title="Shot Heatmap"
-          compact={false}
-          showZoneStats
-          showQuickInsight
-        />
+      <div className="max-w-md mx-auto mb-8">
+        <h2 className="text-xl font-semibold mb-3 text-center">Shot Heatmap</h2>
+        <ZoneGrid mode="heatmap" zoneData={zoneData} />
+        <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
+          <span>0%</span>
+          <div
+            className="h-3 w-32 rounded"
+            style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }}
+          />
+          <span>100%</span>
+          <span className="flex items-center gap-1 ml-2">
+            <span className="w-3 h-3 bg-gray-800 rounded border border-gray-700" /> No shots
+          </span>
+        </div>
       </div>
 
       {/* Zone Performance Radar */}
