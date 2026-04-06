@@ -466,8 +466,8 @@ function AllPlayersView({
         </DashboardPanel>
 
         <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
-          <div className="flex items-start justify-center gap-4">
-            <div className="w-full max-w-[280px]">
+          <div className="flex items-stretch justify-center gap-4">
+            <div className="w-full max-w-[320px]">
               <BasketballCourtHeatMap
                 shots={zoneDataToShots(zoneData)}
                 title=""
@@ -475,10 +475,10 @@ function AllPlayersView({
                 showLegend={false}
                 showZoneStats={false}
                 showQuickInsight={false}
-                courtMaxWidthClass="max-w-[280px]"
+                courtMaxWidthClass="max-w-[320px]"
               />
             </div>
-            <div className="w-full max-w-[280px]">
+            <div className="w-full max-w-[320px] flex">
               <ZoneGrid mode="heatmap" zoneData={zoneData} />
             </div>
           </div>
@@ -822,8 +822,8 @@ function PlayerView({
         </DashboardPanel>
 
         <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
-          <div className="flex items-start justify-center gap-4">
-            <div className="w-full max-w-[280px]">
+          <div className="flex items-stretch justify-center gap-4">
+            <div className="w-full max-w-[320px]">
               <BasketballCourtHeatMap
                 shots={zoneDataToShots(zoneData)}
                 title=""
@@ -831,10 +831,10 @@ function PlayerView({
                 showLegend={false}
                 showZoneStats={false}
                 showQuickInsight={false}
-                courtMaxWidthClass="max-w-[280px]"
+                courtMaxWidthClass="max-w-[320px]"
               />
             </div>
-            <div className="w-full max-w-[280px]">
+            <div className="w-full max-w-[320px] flex">
               <ZoneGrid mode="heatmap" zoneData={zoneData} />
             </div>
           </div>
