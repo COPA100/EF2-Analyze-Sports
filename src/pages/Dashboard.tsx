@@ -467,7 +467,7 @@ function AllPlayersView({
 
         <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
           <div className="flex items-start justify-center gap-4">
-            <div className="w-full max-w-[240px]">
+            <div className="w-full max-w-[280px]">
               <BasketballCourtHeatMap
                 shots={zoneDataToShots(zoneData)}
                 title=""
@@ -475,17 +475,17 @@ function AllPlayersView({
                 showLegend={false}
                 showZoneStats={false}
                 showQuickInsight={false}
-                courtMaxWidthClass="max-w-[240px]"
+                courtMaxWidthClass="max-w-[280px]"
               />
-              <div className="flex items-center justify-center gap-2 mt-2 text-xs text-gray-400">
-                <span>0%</span>
-                <div className="h-3 w-28 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
-                <span>100%</span>
-              </div>
             </div>
-            <div className="w-full max-w-[240px]">
+            <div className="w-full max-w-[280px]">
               <ZoneGrid mode="heatmap" zoneData={zoneData} />
             </div>
+          </div>
+          <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
+            <span>0%</span>
+            <div className="h-3 w-28 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
+            <span>100%</span>
           </div>
         </DashboardPanel>
 
@@ -749,7 +749,7 @@ function PlayerView({
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-4 md:grid-cols-8 gap-1.5 mb-2">
+      <div className="grid grid-cols-4 md:grid-cols-8 gap-2 mb-3">
         <StatCard
           value={playerSessions.length}
           label="Games Played"
@@ -788,52 +788,12 @@ function PlayerView({
         />
       </div>
 
-      <div className="grid gap-2 lg:grid-cols-12">
-        <DashboardPanel title="Player Heatmap" className="lg:col-span-8">
-          <div className="flex items-start justify-center gap-4">
-            <div className="max-w-[220px]">
-              <BasketballCourtHeatMap
-                shots={zoneDataToShots(zoneData)}
-                title=""
-                compact
-                showLegend={false}
-                showZoneStats={false}
-                showQuickInsight={false}
-                courtMaxWidthClass="max-w-[220px]"
-              />
-              <div className="flex items-center justify-center gap-2 mt-1 text-[10px] text-gray-400">
-                <span>0%</span>
-                <div
-                  className="h-2 w-16 rounded"
-                  style={{
-                    background:
-                      "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))",
-                  }}
-                />
-                <span>100%</span>
-              </div>
-            </div>
-            <div className="max-w-[220px]">
-              <ZoneGrid mode="heatmap" zoneData={zoneData} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-1 mt-2 max-w-[220px] mx-auto">
-            <div className="bg-gray-800 rounded p-1 text-center">
-              <p className="text-sm font-bold text-green-400">Z{bestZone}</p>
-              <p className="text-[9px] text-gray-500">Best ({bestZoneAcc}%)</p>
-            </div>
-            <div className="bg-gray-800 rounded p-1 text-center">
-              <p className="text-sm font-bold text-blue-400">Z{favZone}</p>
-              <p className="text-[9px] text-gray-500">Fav ({favCount} shots)</p>
-            </div>
-          </div>
-        </DashboardPanel>
-
-        <DashboardPanel title="Zone Accuracy" className="lg:col-span-4">
-          <ResponsiveContainer width="100%" height={200}>
+      <div className="grid lg:grid-cols-12 gap-3 mb-3">
+        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1">
+          <ResponsiveContainer width="100%" height={185}>
             <RadarChart
               data={[1, 2, 3, 4, 5, 6].map((z) => ({
-                zone: `Zone ${z} (${ZONE_POINTS[z]}pt)`,
+                zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
                 accuracy: zoneAccuracy[z],
               }))}
             >
@@ -849,10 +809,44 @@ function PlayerView({
               />
             </RadarChart>
           </ResponsiveContainer>
+          <div className="grid grid-cols-2 gap-2 w-full mt-1">
+            <div className="bg-gray-800 rounded-lg p-1.5 text-center">
+              <p className="text-base font-bold text-green-400">Z{bestZone}</p>
+              <p className="text-[10px] text-gray-500">Best ({bestZoneAcc}%)</p>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-1.5 text-center">
+              <p className="text-base font-bold text-blue-400">Z{favZone}</p>
+              <p className="text-[10px] text-gray-500">Fav ({favCount} shots)</p>
+            </div>
+          </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Zone Breakdown" className="lg:col-span-4">
-          <ResponsiveContainer width="100%" height={200}>
+        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
+          <div className="flex items-start justify-center gap-4">
+            <div className="w-full max-w-[280px]">
+              <BasketballCourtHeatMap
+                shots={zoneDataToShots(zoneData)}
+                title=""
+                compact
+                showLegend={false}
+                showZoneStats={false}
+                showQuickInsight={false}
+                courtMaxWidthClass="max-w-[280px]"
+              />
+            </div>
+            <div className="w-full max-w-[280px]">
+              <ZoneGrid mode="heatmap" zoneData={zoneData} />
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
+            <span>0%</span>
+            <div className="h-3 w-28 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
+            <span>100%</span>
+          </div>
+        </DashboardPanel>
+
+        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3">
+          <ResponsiveContainer width="100%" height={230}>
             <BarChart
               data={[1, 2, 3, 4, 5, 6].map((z) => ({
                 zone: `Z${z}`,
