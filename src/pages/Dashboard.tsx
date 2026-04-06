@@ -854,33 +854,36 @@ function PlayerView({
                 misses: zoneData[z].misses,
                 points: zonePoints[z],
               }))}
-              margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+              margin={{ top: 5, right: 10, left: -15, bottom: 0 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 10 }} />
-              <YAxis tick={{ fill: "#6b7280", fontSize: 10 }} />
+              <XAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 12 }} />
+              <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
               <Tooltip
                 contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
                 labelStyle={{ color: "#f3f4f6" }}
                 itemStyle={{ color: "#d1d5db" }}
               />
-              <Legend wrapperStyle={{ fontSize: 10, color: "#9ca3af" }} />
+              <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
               <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={[4, 4, 0, 0]} stackId="shots" />
               <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
             </BarChart>
           </ResponsiveContainer>
         </DashboardPanel>
+      </div>
 
+      {/* Bottom row: Trend + Game History */}
+      <div className="grid lg:grid-cols-12 gap-3">
         {gameTrend.length > 1 && (
           <DashboardPanel title="Performance Trend" className="lg:col-span-8">
-            <ResponsiveContainer width="100%" height={170}>
+            <ResponsiveContainer width="100%" height={165}>
               <LineChart
                 data={gameTrend.map((g, i) => ({
                   game: `G${i + 1}`,
                   points: g.points,
                   accuracy: accTrend[i]?.accuracy ?? 0,
                 }))}
-                margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                margin={{ top: 5, right: 10, left: -15, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis dataKey="game" tick={{ fill: "#9ca3af", fontSize: 11 }} />
@@ -904,7 +907,7 @@ function PlayerView({
           </DashboardPanel>
         )}
 
-        <DashboardPanel title="Game History" className="lg:col-span-4" bodyClassName="space-y-1 overflow-y-auto max-h-[170px]">
+        <DashboardPanel title="Game History" className="lg:col-span-4" bodyClassName="space-y-1.5 overflow-y-auto max-h-[165px]">
           {playerSessions
             .slice(0, 10)
             .map((sess) => {
@@ -935,10 +938,10 @@ function PlayerView({
                 <button
                   key={sess.id}
                   onClick={() => navigate(`/stats/${sess.id}`)}
-                  className="w-full bg-gray-800 rounded-xl p-3 flex items-center justify-between text-left transition-colors hover:bg-gray-700"
+                  className="w-full bg-gray-800 rounded-lg p-2 flex items-center justify-between text-left transition-colors hover:bg-gray-700"
                 >
                   <div>
-                    <p className="text-sm font-medium">
+                    <p className="text-xs font-medium">
                       <span
                         className={
                           sess.activityType === "team"
@@ -948,23 +951,12 @@ function PlayerView({
                       >
                         {sess.activityType === "team"
                           ? "Team"
-                          : "Individual"}
-                      </span>{" "}
-                      <span className="text-gray-500">&middot;</span>{" "}
-                      <span className="text-gray-300">{gAcc}% acc</span>
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {dateStr}
+                          : "Indiv"}
+                      </span>
+                      <span className="text-gray-500 ml-1.5">{dateStr}</span>
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-yellow-400">
-                      {gPts} pts
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {gMakes}/{gShots.length} makes
-                    </p>
-                  </div>
+                  <p className="text-xs font-bold text-yellow-400">{gPts} pts</p>
                 </button>
               );
             })}
