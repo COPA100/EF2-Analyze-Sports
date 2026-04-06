@@ -508,7 +508,7 @@ function AllPlayersView({
                 itemStyle={{ color: "#d1d5db" }}
               />
               <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
-              <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={[4, 4, 0, 0]} stackId="shots" />
+              <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={0} stackId="shots" />
               <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
             </BarChart>
           </ResponsiveContainer>
@@ -583,29 +583,28 @@ function AllPlayersView({
         )}
 
         <DashboardPanel title="Recent Games" className="lg:col-span-3" bodyClassName="space-y-1.5 overflow-y-auto max-h-[165px]">
-          {recentGames.map((sess) => {
-            const date = sess.startTime?.toDate?.();
-            const dateStr = date
-              ? date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-              : "Unknown";
-            return (
+          {recentGames.map((sess) => (
               <button
                 key={sess.id}
                 onClick={() => navigate(`/stats/${sess.id}`)}
-                className="w-full bg-gray-800 rounded-lg p-2 flex items-center justify-between text-left transition-colors hover:bg-gray-700"
+                className="w-full bg-gray-800 rounded-lg p-2 text-left transition-colors hover:bg-gray-700"
               >
-                <div>
-                  <p className="text-xs font-medium">
-                    <span className={sess.activityType === "team" ? "text-green-400" : "text-blue-400"}>
-                      {sess.activityType === "team" ? "Team" : "Indiv"}
-                    </span>
-                    <span className="text-gray-500 ml-1.5">{dateStr}</span>
-                  </p>
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className={`text-xs font-semibold ${sess.activityType === "team" ? "text-green-400" : "text-blue-400"}`}>
+                    {sess.activityType === "team" ? "Team" : "Individual"}
+                  </span>
+                  <span className="text-xs font-bold text-yellow-400">{sess.totalPoints} pts</span>
                 </div>
-                <p className="text-xs font-bold text-yellow-400">{sess.totalPoints} pts</p>
+                {sess.activityType === "team" && sess.teams ? (
+                  <div className="text-[10px] text-gray-400 space-y-0.5">
+                    <p><span className="text-gray-500">T1:</span> {sess.teams.team1.join(", ")}</p>
+                    <p><span className="text-gray-500">T2:</span> {sess.teams.team2.join(", ")}</p>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-gray-400 truncate">{sess.playerIds.join(", ")}</p>
+                )}
               </button>
-            );
-          })}
+          ))}
         </DashboardPanel>
 
         {gamePointsTrend.length > 1 && (
@@ -865,7 +864,7 @@ function PlayerView({
                 itemStyle={{ color: "#d1d5db" }}
               />
               <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
-              <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={[4, 4, 0, 0]} stackId="shots" />
+              <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={0} stackId="shots" />
               <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
             </BarChart>
           </ResponsiveContainer>
@@ -911,15 +910,6 @@ function PlayerView({
           {playerSessions
             .slice(0, 10)
             .map((sess) => {
-              const date = sess.startTime?.toDate?.();
-              const dateStr = date
-                ? date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })
-                : "Unknown";
               const gShots = playerShots.filter(
                 (s) => s.gameId === sess.id
               );
@@ -927,36 +917,26 @@ function PlayerView({
                 (sum, s) => sum + s.pointsEarned,
                 0
               );
-              const gMakes = gShots.filter(
-                (s) => s.result === "make"
-              ).length;
-              const gAcc =
-                gShots.length > 0
-                  ? Math.round((gMakes / gShots.length) * 100)
-                  : 0;
               return (
                 <button
                   key={sess.id}
                   onClick={() => navigate(`/stats/${sess.id}`)}
-                  className="w-full bg-gray-800 rounded-lg p-2 flex items-center justify-between text-left transition-colors hover:bg-gray-700"
+                  className="w-full bg-gray-800 rounded-lg p-2 text-left transition-colors hover:bg-gray-700"
                 >
-                  <div>
-                    <p className="text-xs font-medium">
-                      <span
-                        className={
-                          sess.activityType === "team"
-                            ? "text-green-400"
-                            : "text-blue-400"
-                        }
-                      >
-                        {sess.activityType === "team"
-                          ? "Team"
-                          : "Indiv"}
-                      </span>
-                      <span className="text-gray-500 ml-1.5">{dateStr}</span>
-                    </p>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className={`text-xs font-semibold ${sess.activityType === "team" ? "text-green-400" : "text-blue-400"}`}>
+                      {sess.activityType === "team" ? "Team" : "Individual"}
+                    </span>
+                    <span className="text-xs font-bold text-yellow-400">{gPts} pts</span>
                   </div>
-                  <p className="text-xs font-bold text-yellow-400">{gPts} pts</p>
+                  {sess.activityType === "team" && sess.teams ? (
+                    <div className="text-[10px] text-gray-400 space-y-0.5">
+                      <p><span className="text-gray-500">T1:</span> {sess.teams.team1.join(", ")}</p>
+                      <p><span className="text-gray-500">T2:</span> {sess.teams.team2.join(", ")}</p>
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-gray-400 truncate">{sess.playerIds.join(", ")}</p>
+                  )}
                 </button>
               );
             })}
