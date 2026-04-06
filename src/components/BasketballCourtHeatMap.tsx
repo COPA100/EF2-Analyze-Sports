@@ -312,9 +312,12 @@ export default function BasketballCourtHeatMap({
         return { zone, label: ZONE_LABELS[zone], made, total, percentage };
     });
 
-    const containerClasses = compact
-        ? "bg-gray-900 rounded-2xl p-4 border-2 border-gray-700 shadow-xl"
-        : "bg-gray-900 rounded-3xl p-8 border-4 border-gray-700 shadow-2xl";
+    const isBare = !title && !showLegend && !showZoneStats && !showQuickInsight;
+    const containerClasses = isBare
+        ? ""
+        : compact
+          ? "bg-gray-900 rounded-2xl p-4 border-2 border-gray-700 shadow-xl"
+          : "bg-gray-900 rounded-3xl p-8 border-4 border-gray-700 shadow-2xl";
     const headingClasses = compact
         ? "text-xl font-bold text-white mb-4"
         : "text-3xl font-bold text-white mb-6";
