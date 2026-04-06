@@ -136,7 +136,7 @@ export default function Dashboard() {
     <div className="h-screen bg-gray-950 text-white p-2 overflow-hidden lg:overflow-hidden max-lg:overflow-y-auto max-lg:min-h-screen">
       <div className="max-w-[1600px] mx-auto h-full flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between mb-1">
+        <div className="grid grid-cols-3 items-center mb-1">
           <button
             onClick={() => {
               if (lookupId) {
@@ -145,12 +145,12 @@ export default function Dashboard() {
                 navigate("/");
               }
             }}
-            className="text-gray-400 hover:text-white text-sm py-1 pr-4"
+            className="text-gray-400 hover:text-white text-sm py-1 pr-4 justify-self-start"
           >
             &larr; {lookupId ? "All Players" : "Home"}
           </button>
-          <h1 className="text-lg font-bold">Dashboard</h1>
-          <div className="flex items-center gap-3">
+          <h1 className="text-lg font-bold text-center">Dashboard</h1>
+          <div className="flex items-center gap-3 justify-self-end">
             <button
               onClick={() => {
                 setLookupInput("");
