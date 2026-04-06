@@ -11,7 +11,7 @@ import { db } from "../lib/firebase";
 import { ZONE_POINTS } from "../lib/scoring";
 
 import type { GameSession, Shot } from "../types";
-import ZoneGrid from "../components/ZoneGrid";
+import BasketballCourtHeatMap, { zoneDataToShots } from "../components/BasketballCourtHeatMap";
 import {
   BarChart,
   Bar,
@@ -466,7 +466,15 @@ function AllPlayersView({
 
         <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
           <div className="w-full max-w-[340px] mx-auto">
-            <ZoneGrid mode="heatmap" zoneData={zoneData} />
+            <BasketballCourtHeatMap
+              shots={zoneDataToShots(zoneData)}
+              title=""
+              compact
+              showLegend={false}
+              showZoneStats={false}
+              showQuickInsight={false}
+              courtMaxWidthClass="max-w-[340px]"
+            />
             <div className="flex items-center justify-center gap-2 mt-2 text-xs text-gray-400">
               <span>0%</span>
               <div className="h-3 w-28 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
@@ -777,7 +785,15 @@ function PlayerView({
       <div className="grid gap-2 lg:grid-cols-12">
         <DashboardPanel title="Player Heatmap" className="lg:col-span-4">
           <div className="max-w-[220px] mx-auto">
-            <ZoneGrid mode="heatmap" zoneData={zoneData} />
+            <BasketballCourtHeatMap
+              shots={zoneDataToShots(zoneData)}
+              title=""
+              compact
+              showLegend={false}
+              showZoneStats={false}
+              showQuickInsight={false}
+              courtMaxWidthClass="max-w-[220px]"
+            />
             <div className="flex items-center justify-center gap-2 mt-1 text-[10px] text-gray-400">
               <span>0%</span>
               <div

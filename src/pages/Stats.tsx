@@ -13,7 +13,7 @@ import {
 import { db } from "../lib/firebase";
 import { ZONE_POINTS } from "../lib/scoring";
 import type { GameSession, Shot } from "../types";
-import ZoneGrid from "../components/ZoneGrid";
+import BasketballCourtHeatMap, { zoneDataToShots } from "../components/BasketballCourtHeatMap";
 import {
   BarChart,
   Bar,
@@ -192,7 +192,15 @@ export default function Stats() {
       {/* Heatmap */}
       <div className="max-w-md mx-auto mb-8">
         <h2 className="text-xl font-semibold mb-3 text-center">Shot Heatmap</h2>
-        <ZoneGrid mode="heatmap" zoneData={zoneData} />
+        <BasketballCourtHeatMap
+          shots={zoneDataToShots(zoneData)}
+          title=""
+          compact
+          showLegend={false}
+          showZoneStats={false}
+          showQuickInsight={false}
+          courtMaxWidthClass="max-w-md"
+        />
         <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
           <span>0%</span>
           <div
