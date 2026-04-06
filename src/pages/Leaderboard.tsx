@@ -7,21 +7,56 @@ import type { GameSession, Shot } from "../types";
 type SortBy = "points" | "accuracy";
 type Tab = "best" | "lifetime";
 
+const ZONE_NAMES: Record<number, string> = {
+  1: "Zone 1",
+  2: "Zone 2",
+  3: "Zone 3",
+  4: "Zone 4",
+  5: "Zone 5",
+  6: "Zone 6",
+};
+
+function calcBestZone(shots: Shot[]): number {
+  const zoneMakes: Record<number, number> = {};
+  for (const s of shots) {
+    if (s.result === "make") {
+      zoneMakes[s.shotFrom] = (zoneMakes[s.shotFrom] || 0) + 1;
+    }
+  }
+  let best = 1;
+  let bestCount = 0;
+  for (const [zone, count] of Object.entries(zoneMakes)) {
+    if (count > bestCount) {
+      bestCount = count;
+      best = Number(zone);
+    }
+  }
+  return best;
+}
+
+function calcThreePtAccuracy(shots: Shot[]): number {
+  const threePt = shots.filter((s) => s.shotFrom >= 4);
+  if (threePt.length === 0) return 0;
+  const makes = threePt.filter((s) => s.result === "make").length;
+  return Math.round((makes / threePt.length) * 100);
+}
+
 interface PlayerStats {
   id: string;
-  points: number;
+  ppg: number;
   games: number;
   accuracy: number;
-  makes: number;
-  shots: number;
+  bestZone: number;
+  threePtAccuracy: number;
+  points: number;
 }
 
 interface BestGame {
   id: string;
   points: number;
   accuracy: number;
-  makes: number;
-  shots: number;
+  bestZone: number;
+  threePtAccuracy: number;
 }
 
 export default function Leaderboard() {
@@ -62,74 +97,69 @@ export default function Leaderboard() {
         );
 
         // --- Lifetime stats ---
-        const stats: Record<
-          string,
-          { points: number; games: number; makes: number; shots: number }
-        > = {};
-
+        const playerGames: Record<string, number> = {};
         for (const sess of sessions) {
           for (const pid of sess.playerIds) {
-            if (!stats[pid])
-              stats[pid] = { points: 0, games: 0, makes: 0, shots: 0 };
-            stats[pid].games++;
+            playerGames[pid] = (playerGames[pid] || 0) + 1;
           }
         }
 
+        // Group shots by player
+        const shotsByPlayer: Record<string, Shot[]> = {};
         for (const s of individualShots) {
-          if (!stats[s.playerId])
-            stats[s.playerId] = { points: 0, games: 0, makes: 0, shots: 0 };
-          stats[s.playerId].points += s.pointsEarned;
-          stats[s.playerId].shots++;
-          if (s.result === "make") stats[s.playerId].makes++;
+          if (!shotsByPlayer[s.playerId]) shotsByPlayer[s.playerId] = [];
+          shotsByPlayer[s.playerId].push(s);
         }
 
-        const lifetimeRanked = Object.entries(stats).map(([id, s]) => ({
-          id,
-          points: s.points,
-          games: s.games,
-          makes: s.makes,
-          shots: s.shots,
-          accuracy: s.shots > 0 ? Math.round((s.makes / s.shots) * 100) : 0,
-        }));
+        const lifetimeRanked: PlayerStats[] = Object.entries(shotsByPlayer).map(
+          ([id, shots]) => {
+            const games = playerGames[id] || 1;
+            const totalPoints = shots.reduce((sum, s) => sum + s.pointsEarned, 0);
+            const makes = shots.filter((s) => s.result === "make").length;
+            return {
+              id,
+              points: totalPoints,
+              ppg: Math.round((totalPoints / games) * 10) / 10,
+              games,
+              accuracy: shots.length > 0 ? Math.round((makes / shots.length) * 100) : 0,
+              bestZone: calcBestZone(shots),
+              threePtAccuracy: calcThreePtAccuracy(shots),
+            };
+          }
+        );
 
         setLifetime(lifetimeRanked);
 
         // --- Best individual game ---
-        const perGame: Record<
-          string,
-          { playerId: string; points: number; makes: number; shots: number }
-        > = {};
-
-        for (const sess of sessions) {
-          const pid = sess.playerIds[0];
-          perGame[sess.id!] = { playerId: pid, points: 0, makes: 0, shots: 0 };
-        }
-
+        // Group shots by game
+        const shotsByGame: Record<string, Shot[]> = {};
         for (const s of individualShots) {
-          const g = perGame[s.gameId];
-          if (!g) continue;
-          g.points += s.pointsEarned;
-          g.shots++;
-          if (s.result === "make") g.makes++;
+          if (!shotsByGame[s.gameId]) shotsByGame[s.gameId] = [];
+          shotsByGame[s.gameId].push(s);
         }
 
-        // Keep only the best game per player
+        // Map game -> player
+        const gamePlayer: Record<string, string> = {};
+        for (const sess of sessions) {
+          gamePlayer[sess.id!] = sess.playerIds[0];
+        }
+
         const bestByPlayer: Record<string, BestGame> = {};
-        for (const g of Object.values(perGame)) {
-          const acc =
-            g.shots > 0 ? Math.round((g.makes / g.shots) * 100) : 0;
+        for (const [gameId, shots] of Object.entries(shotsByGame)) {
+          const playerId = gamePlayer[gameId];
+          if (!playerId) continue;
+          const points = shots.reduce((sum, s) => sum + s.pointsEarned, 0);
+          const makes = shots.filter((s) => s.result === "make").length;
+          const acc = shots.length > 0 ? Math.round((makes / shots.length) * 100) : 0;
           const entry: BestGame = {
-            id: g.playerId,
-            points: g.points,
+            id: playerId,
+            points,
             accuracy: acc,
-            makes: g.makes,
-            shots: g.shots,
+            bestZone: calcBestZone(shots),
+            threePtAccuracy: calcThreePtAccuracy(shots),
           };
-          if (
-            !bestByPlayer[g.playerId] ||
-            g.points > bestByPlayer[g.playerId].points
-          ) {
-            bestByPlayer[g.playerId] = entry;
+          if (!bestByPlayer[playerId] || points > bestByPlayer[playerId].points) {
+            bestByPlayer[playerId] = entry;
           }
         }
 
@@ -250,13 +280,32 @@ export default function Leaderboard() {
                     : rank === 3
                       ? "\u{1F949}"
                       : null;
-              const subtitle =
-                tab === "best"
-                  ? `${(p as BestGame).makes}/${(p as BestGame).shots} makes`
-                  : `${(p as PlayerStats).games} game${(p as PlayerStats).games !== 1 ? "s" : ""}`;
+
+              const isLifetime = tab === "lifetime";
+              const subtitle = isLifetime
+                ? `${(p as PlayerStats).games} game${(p as PlayerStats).games !== 1 ? "s" : ""} | ${(p as PlayerStats).ppg} ppg`
+                : `${p.points} pts`;
+
               const barValue = sortBy === "points" ? p.points : p.accuracy;
               const barLabel = sortBy === "points" ? `${p.points} pts` : `${p.accuracy}%`;
-              const secondaryStat = sortBy === "points" ? `${p.accuracy}% accuracy` : `${p.points} pts`;
+
+              const rankColor =
+                rank === 1
+                  ? "text-yellow-400"
+                  : rank === 2
+                    ? "text-gray-300"
+                    : rank === 3
+                      ? "text-orange-400"
+                      : "text-blue-400";
+
+              const barBg =
+                rank === 1
+                  ? "bg-yellow-500"
+                  : rank === 2
+                    ? "bg-gray-300"
+                    : rank === 3
+                      ? "bg-orange-600"
+                      : "bg-blue-500";
 
               return (
                 <div
@@ -289,36 +338,28 @@ export default function Leaderboard() {
                       <div className="flex-1 bg-gray-700 rounded-full h-4 overflow-hidden">
                         {barValue > 0 && (
                           <div
-                            className={`h-full rounded-full transition-all ${
-                              rank === 1
-                                ? "bg-yellow-500"
-                                : rank === 2
-                                  ? "bg-gray-300"
-                                  : rank === 3
-                                    ? "bg-orange-600"
-                                    : "bg-blue-500"
-                            }`}
+                            className={`h-full rounded-full transition-all ${barBg}`}
                             style={{
                               width: `${barMax > 0 ? (barValue / barMax) * 100 : 0}%`,
                             }}
                           />
                         )}
                       </div>
-                      <span className={`text-[10px] font-bold shrink-0 ${
-                        rank === 1
-                          ? "text-yellow-400"
-                          : rank === 2
-                            ? "text-gray-300"
-                            : rank === 3
-                              ? "text-orange-400"
-                              : "text-blue-400"
-                      }`}>
+                      <span className={`text-[10px] font-bold shrink-0 ${rankColor}`}>
                         {barLabel}
                       </span>
                     </div>
-                    <p className="text-[10px] text-gray-500 mt-0.5">
-                      {secondaryStat}
-                    </p>
+                    <div className="flex items-center gap-3 mt-0.5">
+                      <span className="text-[10px] text-gray-500">
+                        {sortBy === "points" ? `${p.accuracy}% acc` : `${p.points} pts`}
+                      </span>
+                      <span className="text-[10px] text-gray-500">
+                        Best: {ZONE_NAMES[p.bestZone]}
+                      </span>
+                      <span className="text-[10px] text-gray-500">
+                        3pt: {p.threePtAccuracy}%
+                      </span>
+                    </div>
                   </div>
                 </div>
               );
