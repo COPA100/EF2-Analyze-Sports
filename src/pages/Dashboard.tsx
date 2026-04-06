@@ -31,8 +31,6 @@ import {
   Line,
 } from "recharts";
 
-type View = "all" | "player";
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<GameSession[]>([]);
@@ -44,10 +42,10 @@ export default function Dashboard() {
   const [resetKey, setResetKey] = useState("");
   const [resetKeyError, setResetKeyError] = useState("");
 
-  // View toggle
-  const [view, setView] = useState<View>("all");
+  // Player lookup
   const [lookupInput, setLookupInput] = useState("");
   const [lookupId, setLookupId] = useState("");
+  const [showLookupModal, setShowLookupModal] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -106,7 +104,10 @@ export default function Dashboard() {
 
   function handleLookup() {
     const id = lookupInput.trim();
-    if (id) setLookupId(id);
+    if (id) {
+      setLookupId(id);
+      setShowLookupModal(false);
+    }
   }
 
   if (loading) {
@@ -137,42 +138,35 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex items-center justify-between mb-1">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => {
+              if (lookupId) {
+                setLookupId("");
+              } else {
+                navigate("/");
+              }
+            }}
             className="text-gray-400 hover:text-white text-sm py-1 pr-4"
           >
-            &larr; Home
+            &larr; {lookupId ? "All Players" : "Home"}
           </button>
           <h1 className="text-lg font-bold">Dashboard</h1>
-          <button
-            onClick={() => setShowResetConfirm(true)}
-            className="text-red-400 hover:text-red-300 text-sm py-1 pl-4"
-          >
-            Reset Data
-          </button>
-        </div>
-
-        {/* View toggle */}
-        <div className="flex gap-1 bg-gray-800 rounded-lg p-0.5 mb-2">
-          <button
-            onClick={() => setView("all")}
-            className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-colors ${
-              view === "all"
-                ? "bg-blue-600 text-white"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            All Players
-          </button>
-          <button
-            onClick={() => setView("player")}
-            className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-colors ${
-              view === "player"
-                ? "bg-blue-600 text-white"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            Player Lookup
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setLookupInput("");
+                setShowLookupModal(true);
+              }}
+              className="text-blue-400 hover:text-blue-300 text-sm py-1"
+            >
+              {lookupId ? "Look Up Another" : "Player Lookup"}
+            </button>
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              className="text-red-400 hover:text-red-300 text-sm py-1 pl-4"
+            >
+              Reset Data
+            </button>
+          </div>
         </div>
 
         {/* Reset confirmation modal */}
@@ -223,48 +217,54 @@ export default function Dashboard() {
         )}
 
         <div className="flex-1 min-h-0 overflow-hidden max-lg:overflow-visible">
-          {view === "all" ? (
-            <AllPlayersView
+          {lookupId ? (
+            <PlayerView
+              playerId={lookupId}
               sessions={sessions}
               shots={shots}
               navigate={navigate}
             />
           ) : (
-            <div className="lg:flex lg:flex-col">
-            {/* Player ID input */}
-            <div className="flex gap-2 mt-2 mb-6 max-w-sm mx-auto">
-              <input
-                type="text"
-                value={lookupInput}
-                onChange={(e) => setLookupInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLookup()}
-                placeholder="Enter Player ID"
-                autoFocus
-                className="flex-1 bg-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none focus-visible:ring-2 focus:ring-blue-500"
-              />
-              <button
-                onClick={handleLookup}
-                disabled={!lookupInput.trim()}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 px-5 py-3 rounded-xl font-semibold transition-colors"
-              >
-                Look Up
-              </button>
-            </div>
-              {lookupId ? (
-                <PlayerView
-                  playerId={lookupId}
-                  sessions={sessions}
-                  shots={shots}
-                  navigate={navigate}
-                />
-              ) : (
-                <p className="text-center text-gray-500 mt-12">
-                  Enter a Player ID to see their lifetime stats.
-                </p>
-              )}
-            </div>
+            <AllPlayersView
+              sessions={sessions}
+              shots={shots}
+              navigate={navigate}
+            />
           )}
         </div>
+
+        {/* Player lookup modal */}
+        {showLookupModal && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-2xl p-6 max-w-sm w-full">
+              <p className="text-lg font-bold mb-4 text-center">Player Lookup</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={lookupInput}
+                  onChange={(e) => setLookupInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleLookup()}
+                  placeholder="Enter Player ID"
+                  autoFocus
+                  className="flex-1 bg-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none focus-visible:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={handleLookup}
+                  disabled={!lookupInput.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 px-5 py-3 rounded-xl font-semibold transition-colors"
+                >
+                  Go
+                </button>
+              </div>
+              <button
+                onClick={() => setShowLookupModal(false)}
+                className="w-full mt-3 text-gray-400 hover:text-white text-sm py-2 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
