@@ -232,7 +232,7 @@ export default function Dashboard() {
           ) : (
             <div className="lg:flex lg:flex-col">
             {/* Player ID input */}
-            <div className="flex gap-2 mb-6 max-w-sm mx-auto">
+            <div className="flex gap-2 mt-2 mb-6 max-w-sm mx-auto">
               <input
                 type="text"
                 value={lookupInput}
