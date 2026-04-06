@@ -17,7 +17,7 @@ import {
 import { db } from "../lib/firebase";
 import { getPointsForZone, getNextPlayer } from "../lib/scoring";
 import type { GameSession, Shot } from "../types";
-import ZoneGrid from "../components/ZoneGrid";
+import BasketballCourtHeatMap from "../components/BasketballCourtHeatMap";
 
 interface GameState {
   session: GameSession;
@@ -383,12 +383,20 @@ export default function Play() {
       )}
 
       {/* Zone Grid */}
-      <ZoneGrid
-        mode="play"
-        onZoneClick={setSelectedZone}
-        selectedZone={selectedZone}
-        disabledZone={effectiveDisabledZone}
-      />
+      <div className="w-full max-w-md">
+        <BasketballCourtHeatMap
+          shots={[]}
+          onZoneClick={(zone) => setSelectedZone(Number(zone))}
+          selectedZone={selectedZone?.toString() ?? null}
+          disabledZone={effectiveDisabledZone?.toString() ?? null}
+          title=""
+          compact
+          showLegend={false}
+          showZoneStats={false}
+          showQuickInsight={false}
+          courtMaxWidthClass="max-w-md"
+        />
+      </div>
 
       {/* Make / Miss buttons */}
       <div className="flex gap-4 mt-6 w-full max-w-md">

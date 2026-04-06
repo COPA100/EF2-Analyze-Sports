@@ -11,6 +11,7 @@ import { db } from "../lib/firebase";
 import { ZONE_POINTS } from "../lib/scoring";
 
 import type { GameSession, Shot } from "../types";
+import BasketballCourtHeatMap, { zoneDataToShots } from "../components/BasketballCourtHeatMap";
 import ZoneGrid from "../components/ZoneGrid";
 import {
   BarChart,
@@ -31,8 +32,6 @@ import {
   Line,
 } from "recharts";
 
-type View = "all" | "player";
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<GameSession[]>([]);
@@ -44,10 +43,10 @@ export default function Dashboard() {
   const [resetKey, setResetKey] = useState("");
   const [resetKeyError, setResetKeyError] = useState("");
 
-  // View toggle
-  const [view, setView] = useState<View>("all");
+  // Player lookup
   const [lookupInput, setLookupInput] = useState("");
   const [lookupId, setLookupId] = useState("");
+  const [showLookupModal, setShowLookupModal] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -106,7 +105,10 @@ export default function Dashboard() {
 
   function handleLookup() {
     const id = lookupInput.trim();
-    if (id) setLookupId(id);
+    if (id) {
+      setLookupId(id);
+      setShowLookupModal(false);
+    }
   }
 
   if (loading) {
@@ -135,44 +137,37 @@ export default function Dashboard() {
     <div className="h-screen bg-gray-950 text-white p-2 overflow-hidden lg:overflow-hidden max-lg:overflow-y-auto max-lg:min-h-screen">
       <div className="max-w-[1600px] mx-auto h-full flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between mb-1">
+        <div className="grid grid-cols-3 items-center mb-1">
           <button
-            onClick={() => navigate("/")}
-            className="text-gray-400 hover:text-white text-sm py-1 pr-4"
+            onClick={() => {
+              if (lookupId) {
+                setLookupId("");
+              } else {
+                navigate("/");
+              }
+            }}
+            className="text-gray-400 hover:text-white text-sm py-1 pr-4 justify-self-start"
           >
-            &larr; Home
+            &larr; {lookupId ? "All Players" : "Home"}
           </button>
-          <h1 className="text-lg font-bold">Dashboard</h1>
-          <button
-            onClick={() => setShowResetConfirm(true)}
-            className="text-red-400 hover:text-red-300 text-sm py-1 pl-4"
-          >
-            Reset Data
-          </button>
-        </div>
-
-        {/* View toggle */}
-        <div className="flex gap-1 bg-gray-800 rounded-lg p-0.5 mb-2">
-          <button
-            onClick={() => setView("all")}
-            className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-colors ${
-              view === "all"
-                ? "bg-blue-600 text-white"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            All Players
-          </button>
-          <button
-            onClick={() => setView("player")}
-            className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-colors ${
-              view === "player"
-                ? "bg-blue-600 text-white"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            Player Lookup
-          </button>
+          <h1 className="text-lg font-bold text-center">Dashboard</h1>
+          <div className="flex items-center gap-3 justify-self-end">
+            <button
+              onClick={() => {
+                setLookupInput("");
+                setShowLookupModal(true);
+              }}
+              className="text-blue-400 hover:text-blue-300 text-sm py-1"
+            >
+              {lookupId ? "Look Up Another" : "Player Lookup"}
+            </button>
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              className="text-red-400 hover:text-red-300 text-sm py-1 pl-4"
+            >
+              Reset Data
+            </button>
+          </div>
         </div>
 
         {/* Reset confirmation modal */}
@@ -223,48 +218,54 @@ export default function Dashboard() {
         )}
 
         <div className="flex-1 min-h-0 overflow-hidden max-lg:overflow-visible">
-          {view === "all" ? (
-            <AllPlayersView
+          {lookupId ? (
+            <PlayerView
+              playerId={lookupId}
               sessions={sessions}
               shots={shots}
               navigate={navigate}
             />
           ) : (
-            <div className="lg:flex lg:flex-col">
-            {/* Player ID input */}
-            <div className="flex gap-2 mt-2 mb-6 max-w-sm mx-auto">
-              <input
-                type="text"
-                value={lookupInput}
-                onChange={(e) => setLookupInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLookup()}
-                placeholder="Enter Player ID"
-                autoFocus
-                className="flex-1 bg-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none focus-visible:ring-2 focus:ring-blue-500"
-              />
-              <button
-                onClick={handleLookup}
-                disabled={!lookupInput.trim()}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 px-5 py-3 rounded-xl font-semibold transition-colors"
-              >
-                Look Up
-              </button>
-            </div>
-              {lookupId ? (
-                <PlayerView
-                  playerId={lookupId}
-                  sessions={sessions}
-                  shots={shots}
-                  navigate={navigate}
-                />
-              ) : (
-                <p className="text-center text-gray-500 mt-12">
-                  Enter a Player ID to see their lifetime stats.
-                </p>
-              )}
-            </div>
+            <AllPlayersView
+              sessions={sessions}
+              shots={shots}
+              navigate={navigate}
+            />
           )}
         </div>
+
+        {/* Player lookup modal */}
+        {showLookupModal && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-2xl p-6 max-w-sm w-full">
+              <p className="text-lg font-bold mb-4 text-center">Player Lookup</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={lookupInput}
+                  onChange={(e) => setLookupInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleLookup()}
+                  placeholder="Enter Player ID"
+                  autoFocus
+                  className="flex-1 bg-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none focus-visible:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={handleLookup}
+                  disabled={!lookupInput.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 px-5 py-3 rounded-xl font-semibold transition-colors"
+                >
+                  Go
+                </button>
+              </div>
+              <button
+                onClick={() => setShowLookupModal(false)}
+                className="w-full mt-3 text-gray-400 hover:text-white text-sm py-2 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -465,13 +466,26 @@ function AllPlayersView({
         </DashboardPanel>
 
         <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
-          <div className="w-full max-w-[340px] mx-auto">
-            <ZoneGrid mode="heatmap" zoneData={zoneData} />
-            <div className="flex items-center justify-center gap-2 mt-2 text-xs text-gray-400">
-              <span>0%</span>
-              <div className="h-3 w-28 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
-              <span>100%</span>
+          <div className="flex items-stretch justify-center gap-4">
+            <div className="w-full max-w-[380px]">
+              <BasketballCourtHeatMap
+                shots={zoneDataToShots(zoneData)}
+                title=""
+                compact
+                showLegend={false}
+                showZoneStats={false}
+                showQuickInsight={false}
+                courtMaxWidthClass="max-w-[380px]"
+              />
             </div>
+            <div className="w-full max-w-[320px] flex">
+              <ZoneGrid mode="heatmap" zoneData={zoneData} />
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
+            <span>0%</span>
+            <div className="h-3 w-28 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
+            <span>100%</span>
           </div>
         </DashboardPanel>
 
@@ -494,7 +508,7 @@ function AllPlayersView({
                 itemStyle={{ color: "#d1d5db" }}
               />
               <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
-              <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={[4, 4, 0, 0]} stackId="shots" />
+              <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={0} stackId="shots" />
               <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
             </BarChart>
           </ResponsiveContainer>
@@ -516,7 +530,7 @@ function AllPlayersView({
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis type="number" tick={{ fill: "#6b7280", fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tick={{ fill: "#d1d5db", fontSize: 12 }} width={60} />
+                <YAxis type="category" dataKey="name" tick={{ fill: "#d1d5db", fontSize: 11 }} width={60} interval={0} />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
                   labelStyle={{ color: "#f3f4f6" }}
@@ -549,7 +563,7 @@ function AllPlayersView({
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis type="number" domain={[0, 100]} tick={{ fill: "#6b7280", fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tick={{ fill: "#d1d5db", fontSize: 12 }} width={60} />
+                <YAxis type="category" dataKey="name" tick={{ fill: "#d1d5db", fontSize: 11 }} width={60} interval={0} />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
                   labelStyle={{ color: "#f3f4f6" }}
@@ -569,29 +583,28 @@ function AllPlayersView({
         )}
 
         <DashboardPanel title="Recent Games" className="lg:col-span-3" bodyClassName="space-y-1.5 overflow-y-auto max-h-[165px]">
-          {recentGames.map((sess) => {
-            const date = sess.startTime?.toDate?.();
-            const dateStr = date
-              ? date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-              : "Unknown";
-            return (
+          {recentGames.map((sess) => (
               <button
                 key={sess.id}
                 onClick={() => navigate(`/stats/${sess.id}`)}
-                className="w-full bg-gray-800 rounded-lg p-2 flex items-center justify-between text-left transition-colors hover:bg-gray-700"
+                className="w-full bg-gray-800 rounded-lg p-2 text-left transition-colors hover:bg-gray-700"
               >
-                <div>
-                  <p className="text-xs font-medium">
-                    <span className={sess.activityType === "team" ? "text-green-400" : "text-blue-400"}>
-                      {sess.activityType === "team" ? "Team" : "Indiv"}
-                    </span>
-                    <span className="text-gray-500 ml-1.5">{dateStr}</span>
-                  </p>
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className={`text-xs font-semibold ${sess.activityType === "team" ? "text-green-400" : "text-blue-400"}`}>
+                    {sess.activityType === "team" ? "Team" : "Individual"}
+                  </span>
+                  <span className="text-xs font-bold text-yellow-400">{sess.totalPoints} pts</span>
                 </div>
-                <p className="text-xs font-bold text-yellow-400">{sess.totalPoints} pts</p>
+                {sess.activityType === "team" && sess.teams ? (
+                  <div className="text-[10px] text-gray-400 space-y-0.5">
+                    <p><span className="text-gray-500">T1:</span> {sess.teams.team1.join(", ")}</p>
+                    <p><span className="text-gray-500">T2:</span> {sess.teams.team2.join(", ")}</p>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-gray-400 truncate">{sess.playerIds.join(", ")}</p>
+                )}
               </button>
-            );
-          })}
+          ))}
         </DashboardPanel>
 
         {gamePointsTrend.length > 1 && (
@@ -735,7 +748,7 @@ function PlayerView({
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-4 md:grid-cols-8 gap-1.5 mb-2">
+      <div className="grid grid-cols-4 md:grid-cols-8 gap-2 mb-3">
         <StatCard
           value={playerSessions.length}
           label="Games Played"
@@ -774,39 +787,12 @@ function PlayerView({
         />
       </div>
 
-      <div className="grid gap-2 lg:grid-cols-12">
-        <DashboardPanel title="Player Heatmap" className="lg:col-span-4">
-          <div className="max-w-[220px] mx-auto">
-            <ZoneGrid mode="heatmap" zoneData={zoneData} />
-            <div className="flex items-center justify-center gap-2 mt-1 text-[10px] text-gray-400">
-              <span>0%</span>
-              <div
-                className="h-2 w-16 rounded"
-                style={{
-                  background:
-                    "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))",
-                }}
-              />
-              <span>100%</span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-1 mt-2">
-            <div className="bg-gray-800 rounded p-1 text-center">
-              <p className="text-sm font-bold text-green-400">Z{bestZone}</p>
-              <p className="text-[9px] text-gray-500">Best ({bestZoneAcc}%)</p>
-            </div>
-            <div className="bg-gray-800 rounded p-1 text-center">
-              <p className="text-sm font-bold text-blue-400">Z{favZone}</p>
-              <p className="text-[9px] text-gray-500">Fav ({favCount} shots)</p>
-            </div>
-          </div>
-        </DashboardPanel>
-
-        <DashboardPanel title="Zone Accuracy" className="lg:col-span-4">
-          <ResponsiveContainer width="100%" height={200}>
+      <div className="grid lg:grid-cols-12 gap-3 mb-3">
+        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1">
+          <ResponsiveContainer width="100%" height={185}>
             <RadarChart
               data={[1, 2, 3, 4, 5, 6].map((z) => ({
-                zone: `Zone ${z} (${ZONE_POINTS[z]}pt)`,
+                zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
                 accuracy: zoneAccuracy[z],
               }))}
             >
@@ -822,10 +808,44 @@ function PlayerView({
               />
             </RadarChart>
           </ResponsiveContainer>
+          <div className="grid grid-cols-2 gap-2 w-full mt-1">
+            <div className="bg-gray-800 rounded-lg p-1.5 text-center">
+              <p className="text-base font-bold text-green-400">Z{bestZone}</p>
+              <p className="text-[10px] text-gray-500">Best ({bestZoneAcc}%)</p>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-1.5 text-center">
+              <p className="text-base font-bold text-blue-400">Z{favZone}</p>
+              <p className="text-[10px] text-gray-500">Fav ({favCount} shots)</p>
+            </div>
+          </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Zone Breakdown" className="lg:col-span-4">
-          <ResponsiveContainer width="100%" height={200}>
+        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
+          <div className="flex items-stretch justify-center gap-4">
+            <div className="w-full max-w-[380px]">
+              <BasketballCourtHeatMap
+                shots={zoneDataToShots(zoneData)}
+                title=""
+                compact
+                showLegend={false}
+                showZoneStats={false}
+                showQuickInsight={false}
+                courtMaxWidthClass="max-w-[380px]"
+              />
+            </div>
+            <div className="w-full max-w-[320px] flex">
+              <ZoneGrid mode="heatmap" zoneData={zoneData} />
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
+            <span>0%</span>
+            <div className="h-3 w-28 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
+            <span>100%</span>
+          </div>
+        </DashboardPanel>
+
+        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3">
+          <ResponsiveContainer width="100%" height={230}>
             <BarChart
               data={[1, 2, 3, 4, 5, 6].map((z) => ({
                 zone: `Z${z}`,
@@ -833,33 +853,36 @@ function PlayerView({
                 misses: zoneData[z].misses,
                 points: zonePoints[z],
               }))}
-              margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+              margin={{ top: 5, right: 10, left: -15, bottom: 0 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 10 }} />
-              <YAxis tick={{ fill: "#6b7280", fontSize: 10 }} />
+              <XAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 12 }} />
+              <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
               <Tooltip
                 contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
                 labelStyle={{ color: "#f3f4f6" }}
                 itemStyle={{ color: "#d1d5db" }}
               />
-              <Legend wrapperStyle={{ fontSize: 10, color: "#9ca3af" }} />
-              <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={[4, 4, 0, 0]} stackId="shots" />
+              <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
+              <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={0} stackId="shots" />
               <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
             </BarChart>
           </ResponsiveContainer>
         </DashboardPanel>
+      </div>
 
+      {/* Bottom row: Trend + Game History */}
+      <div className="grid lg:grid-cols-12 gap-3">
         {gameTrend.length > 1 && (
           <DashboardPanel title="Performance Trend" className="lg:col-span-8">
-            <ResponsiveContainer width="100%" height={170}>
+            <ResponsiveContainer width="100%" height={165}>
               <LineChart
                 data={gameTrend.map((g, i) => ({
                   game: `G${i + 1}`,
                   points: g.points,
                   accuracy: accTrend[i]?.accuracy ?? 0,
                 }))}
-                margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                margin={{ top: 5, right: 10, left: -15, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis dataKey="game" tick={{ fill: "#9ca3af", fontSize: 11 }} />
@@ -883,19 +906,10 @@ function PlayerView({
           </DashboardPanel>
         )}
 
-        <DashboardPanel title="Game History" className="lg:col-span-4" bodyClassName="space-y-1 overflow-y-auto max-h-[170px]">
+        <DashboardPanel title="Game History" className="lg:col-span-4" bodyClassName="space-y-1.5 overflow-y-auto max-h-[165px]">
           {playerSessions
             .slice(0, 10)
             .map((sess) => {
-              const date = sess.startTime?.toDate?.();
-              const dateStr = date
-                ? date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })
-                : "Unknown";
               const gShots = playerShots.filter(
                 (s) => s.gameId === sess.id
               );
@@ -903,47 +917,26 @@ function PlayerView({
                 (sum, s) => sum + s.pointsEarned,
                 0
               );
-              const gMakes = gShots.filter(
-                (s) => s.result === "make"
-              ).length;
-              const gAcc =
-                gShots.length > 0
-                  ? Math.round((gMakes / gShots.length) * 100)
-                  : 0;
               return (
                 <button
                   key={sess.id}
                   onClick={() => navigate(`/stats/${sess.id}`)}
-                  className="w-full bg-gray-800 rounded-xl p-3 flex items-center justify-between text-left transition-colors hover:bg-gray-700"
+                  className="w-full bg-gray-800 rounded-lg p-2 text-left transition-colors hover:bg-gray-700"
                 >
-                  <div>
-                    <p className="text-sm font-medium">
-                      <span
-                        className={
-                          sess.activityType === "team"
-                            ? "text-green-400"
-                            : "text-blue-400"
-                        }
-                      >
-                        {sess.activityType === "team"
-                          ? "Team"
-                          : "Individual"}
-                      </span>{" "}
-                      <span className="text-gray-500">&middot;</span>{" "}
-                      <span className="text-gray-300">{gAcc}% acc</span>
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {dateStr}
-                    </p>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className={`text-xs font-semibold ${sess.activityType === "team" ? "text-green-400" : "text-blue-400"}`}>
+                      {sess.activityType === "team" ? "Team" : "Individual"}
+                    </span>
+                    <span className="text-xs font-bold text-yellow-400">{gPts} pts</span>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-yellow-400">
-                      {gPts} pts
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {gMakes}/{gShots.length} makes
-                    </p>
-                  </div>
+                  {sess.activityType === "team" && sess.teams ? (
+                    <div className="text-[10px] text-gray-400 space-y-0.5">
+                      <p><span className="text-gray-500">T1:</span> {sess.teams.team1.join(", ")}</p>
+                      <p><span className="text-gray-500">T2:</span> {sess.teams.team2.join(", ")}</p>
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-gray-400 truncate">{sess.playerIds.join(", ")}</p>
+                  )}
                 </button>
               );
             })}
