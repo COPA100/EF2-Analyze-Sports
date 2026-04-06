@@ -416,41 +416,10 @@ function AllPlayersView({
         <StatCard value={totalShots > 0 ? (totalPoints / totalShots).toFixed(1) : "0"} label="Pts/Shot" color="text-orange-400" />
       </div>
 
-      {/* Top row: Heatmap + Charts */}
+      {/* Top row: Accuracy | Heatmap (center, big) | Breakdown */}
       <div className="grid lg:grid-cols-12 gap-3 mb-3">
-        <DashboardPanel title="Shot Heatmap" className="lg:col-span-5">
-          <div className="flex items-start gap-4">
-            <div className="flex-1 max-w-[280px]">
-              <ZoneGrid mode="heatmap" zoneData={zoneData} />
-              <div className="flex items-center justify-center gap-2 mt-2 text-xs text-gray-400">
-                <span>0%</span>
-                <div className="h-3 w-24 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
-                <span>100%</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-1.5 text-center min-w-[80px]">
-              <div className="bg-gray-800 rounded-lg px-3 py-1.5">
-                <p className="text-lg font-bold text-blue-400">{individualSessions.length}</p>
-                <p className="text-[10px] text-gray-400">Individual</p>
-              </div>
-              <div className="bg-gray-800 rounded-lg px-3 py-1.5">
-                <p className="text-lg font-bold text-green-400">{teamSessions.length}</p>
-                <p className="text-[10px] text-gray-400">Team</p>
-              </div>
-              <div className="bg-gray-800 rounded-lg px-3 py-1.5">
-                <p className="text-lg font-bold text-yellow-400">{completedSessions.length}</p>
-                <p className="text-[10px] text-gray-400">Completed</p>
-              </div>
-              <div className="bg-gray-800 rounded-lg px-3 py-1.5">
-                <p className="text-sm font-bold text-green-400">Z{bestZone} <span className="text-gray-500 font-normal text-[10px]">{bestZoneAcc}%</span></p>
-                <p className="text-[10px] text-gray-500">Best Zone</p>
-              </div>
-            </div>
-          </div>
-        </DashboardPanel>
-
-        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3">
-          <ResponsiveContainer width="100%" height={240}>
+        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1">
+          <ResponsiveContainer width="100%" height={185}>
             <RadarChart
               data={[1, 2, 3, 4, 5, 6].map((z) => ({
                 zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
@@ -469,10 +438,45 @@ function AllPlayersView({
               />
             </RadarChart>
           </ResponsiveContainer>
+          <div className="grid grid-cols-2 gap-2 w-full mt-1">
+            <div className="bg-gray-800 rounded-lg p-1.5 text-center">
+              <p className="text-base font-bold text-green-400">Z{bestZone}</p>
+              <p className="text-[10px] text-gray-500">Best ({bestZoneAcc}%)</p>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-1.5 text-center">
+              <p className="text-base font-bold text-blue-400">Z{popularZone}</p>
+              <p className="text-[10px] text-gray-500">Fav ({popularCount})</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 w-full mt-2">
+            <div className="bg-gray-800 rounded-lg p-1.5 text-center">
+              <p className="text-base font-bold text-blue-400">{individualSessions.length}</p>
+              <p className="text-[10px] text-gray-400">Indiv</p>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-1.5 text-center">
+              <p className="text-base font-bold text-green-400">{teamSessions.length}</p>
+              <p className="text-[10px] text-gray-400">Team</p>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-1.5 text-center">
+              <p className="text-base font-bold text-yellow-400">{completedSessions.length}</p>
+              <p className="text-[10px] text-gray-400">Done</p>
+            </div>
+          </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Zone Breakdown" className="lg:col-span-4">
-          <ResponsiveContainer width="100%" height={240}>
+        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
+          <div className="w-full max-w-[340px] mx-auto">
+            <ZoneGrid mode="heatmap" zoneData={zoneData} />
+            <div className="flex items-center justify-center gap-2 mt-2 text-xs text-gray-400">
+              <span>0%</span>
+              <div className="h-3 w-28 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
+              <span>100%</span>
+            </div>
+          </div>
+        </DashboardPanel>
+
+        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3">
+          <ResponsiveContainer width="100%" height={230}>
             <BarChart
               data={[1, 2, 3, 4, 5, 6].map((z) => ({
                 zone: `Z${z}`,
@@ -501,7 +505,7 @@ function AllPlayersView({
       <div className="grid lg:grid-cols-12 gap-3">
         {topByPoints.length > 0 && (
           <DashboardPanel title="Top Players by Points" className="lg:col-span-3">
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={165}>
               <BarChart
                 layout="vertical"
                 data={topByPoints.map((id) => ({
@@ -531,7 +535,7 @@ function AllPlayersView({
 
         {topByAccuracy.length > 0 && (
           <DashboardPanel title="Top Players by Accuracy" className="lg:col-span-3">
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={165}>
               <BarChart
                 layout="vertical"
                 data={topByAccuracy.map((id) => {
@@ -564,7 +568,7 @@ function AllPlayersView({
           </DashboardPanel>
         )}
 
-        <DashboardPanel title="Recent Games" className="lg:col-span-3" bodyClassName="space-y-1.5 overflow-y-auto max-h-[200px]">
+        <DashboardPanel title="Recent Games" className="lg:col-span-3" bodyClassName="space-y-1.5 overflow-y-auto max-h-[165px]">
           {recentGames.map((sess) => {
             const date = sess.startTime?.toDate?.();
             const dateStr = date
@@ -592,7 +596,7 @@ function AllPlayersView({
 
         {gamePointsTrend.length > 1 && (
           <DashboardPanel title="Points Trend" className="lg:col-span-3">
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={165}>
               <LineChart data={gamePointsTrend} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis dataKey="label" tick={{ fill: "#9ca3af", fontSize: 11 }} />
