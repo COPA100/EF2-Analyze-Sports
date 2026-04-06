@@ -530,7 +530,7 @@ function AllPlayersView({
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis type="number" tick={{ fill: "#6b7280", fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tick={{ fill: "#d1d5db", fontSize: 12 }} width={60} />
+                <YAxis type="category" dataKey="name" tick={{ fill: "#d1d5db", fontSize: 11 }} width={60} interval={0} />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
                   labelStyle={{ color: "#f3f4f6" }}
@@ -563,7 +563,7 @@ function AllPlayersView({
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis type="number" domain={[0, 100]} tick={{ fill: "#6b7280", fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tick={{ fill: "#d1d5db", fontSize: 12 }} width={60} />
+                <YAxis type="category" dataKey="name" tick={{ fill: "#d1d5db", fontSize: 11 }} width={60} interval={0} />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
                   labelStyle={{ color: "#f3f4f6" }}
