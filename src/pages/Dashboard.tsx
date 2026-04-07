@@ -420,7 +420,7 @@ function AllPlayersView({
       {/* Top row: Accuracy | Heatmap (center, big) | Breakdown */}
       <div className="grid lg:grid-cols-12 gap-3 mb-2">
         <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1">
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={220}>
               <RadarChart
                 data={[1, 2, 3, 4, 5, 6].map((z) => ({
                   zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
@@ -453,7 +453,7 @@ function AllPlayersView({
 
         <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
           <div className="flex items-stretch justify-center gap-4">
-            <div className="flex-[3] min-w-0">
+            <div className="w-1/2 min-w-0">
               <BasketballCourtHeatMap
                 shots={zoneDataToShots(zoneData)}
                 title=""
@@ -464,7 +464,7 @@ function AllPlayersView({
                 courtMaxWidthClass="max-w-full"
               />
             </div>
-            <div className="flex-[2] min-w-0 flex">
+            <div className="w-1/2 min-w-0 flex">
               <ZoneGrid mode="heatmap" zoneData={zoneData} />
             </div>
           </div>
@@ -476,7 +476,7 @@ function AllPlayersView({
         </DashboardPanel>
 
         <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3">
-          <ResponsiveContainer width="100%" height={280}>
+          <ResponsiveContainer width="100%" height={220}>
               <BarChart
                 data={[1, 2, 3, 4, 5, 6].map((z) => ({
                   zone: `Z${z}`,
@@ -775,7 +775,7 @@ function PlayerView({
 
       <div className="grid lg:grid-cols-12 gap-3 mb-2">
         <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1">
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={220}>
               <RadarChart
                 data={[1, 2, 3, 4, 5, 6].map((z) => ({
                   zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
@@ -808,7 +808,7 @@ function PlayerView({
 
         <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
           <div className="flex items-stretch justify-center gap-4">
-            <div className="flex-[3] min-w-0">
+            <div className="w-1/2 min-w-0">
               <BasketballCourtHeatMap
                 shots={zoneDataToShots(zoneData)}
                 title=""
@@ -819,7 +819,7 @@ function PlayerView({
                 courtMaxWidthClass="max-w-full"
               />
             </div>
-            <div className="flex-[2] min-w-0 flex">
+            <div className="w-1/2 min-w-0 flex">
               <ZoneGrid mode="heatmap" zoneData={zoneData} />
             </div>
           </div>
@@ -831,7 +831,7 @@ function PlayerView({
         </DashboardPanel>
 
         <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3">
-          <ResponsiveContainer width="100%" height={280}>
+          <ResponsiveContainer width="100%" height={220}>
               <BarChart
                 data={[1, 2, 3, 4, 5, 6].map((z) => ({
                   zone: `Z${z}`,
