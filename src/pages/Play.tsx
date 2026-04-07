@@ -97,19 +97,8 @@ export default function Play() {
   const disabledZone =
     gameState?.session.activityType === "individual" ? lastZone : null;
 
-  // For team mode: disabled zone is per-player last shot
-  const teamDisabledZone = (() => {
-    if (!gameState || gameState.session.activityType !== "team") return null;
-    const playerShots = gameState.shots.filter(
-      (s) => s.playerId === gameState.currentPlayerId
-    );
-    return playerShots.length > 0
-      ? playerShots[playerShots.length - 1].shotFrom
-      : null;
-  })();
-
-  const effectiveDisabledZone =
-    gameState?.session.activityType === "team" ? teamDisabledZone : disabledZone;
+  // Only individual play blocks the last zone; team play has no zone restrictions
+  const effectiveDisabledZone = disabledZone;
 
   const initFromState = useCallback(
     (session: GameSession, shots: Shot[]) => {
