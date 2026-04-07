@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { collection, doc, setDoc, addDoc, Timestamp, query, where, getDocs } from "firebase/firestore";
+import { collection, doc, setDoc, addDoc, Timestamp, query, where, getDocs, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import type { GameSession } from "../types";
 
@@ -17,6 +17,7 @@ export default function Setup() {
   const [team2Players, setTeam2Players] = useState<string[]>([]);
   const [team1Input, setTeam1Input] = useState("");
   const [team2Input, setTeam2Input] = useState("");
+  const [addingTeamPlayer, setAddingTeamPlayer] = useState<1 | 2 | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -26,6 +27,11 @@ export default function Setup() {
       playerId: id,
       createdAt: Timestamp.now(),
     }, { merge: true });
+  }
+
+  async function userExists(id: string) {
+    const userSnap = await getDoc(doc(db, "users", id));
+    return userSnap.exists();
   }
 
   async function startIndividualGame() {
@@ -79,7 +85,14 @@ export default function Setup() {
     setError("");
     try {
       const allPlayers = [...team1Players, ...team2Players];
-      for (const id of allPlayers) await ensureUser(id);
+      for (const id of allPlayers) {
+        const exists = await userExists(id);
+        if (!exists) {
+          setError(`Player ID "${id}" must be created in Individual mode before team play.`);
+          setLoading(false);
+          return;
+        }
+      }
       const session: Omit<GameSession, "id"> = {
         activityType: "team",
         playerIds: allPlayers,
@@ -101,7 +114,7 @@ export default function Setup() {
     }
   }
 
-  function addTeamPlayer(team: 1 | 2) {
+  async function addTeamPlayer(team: 1 | 2) {
     const input = team === 1 ? team1Input.trim() : team2Input.trim();
     if (!input) return;
     const players = team === 1 ? team1Players : team2Players;
@@ -110,13 +123,27 @@ export default function Setup() {
       setError("Player already added.");
       return;
     }
+    setAddingTeamPlayer(team);
     setError("");
-    if (team === 1) {
-      setTeam1Players([...team1Players, input]);
-      setTeam1Input("");
-    } else {
-      setTeam2Players([...team2Players, input]);
-      setTeam2Input("");
+    try {
+      const exists = await userExists(input);
+      if (!exists) {
+        setError(`Player ID "${input}" not found. They must play Individual mode first.`);
+        return;
+      }
+
+      if (team === 1) {
+        setTeam1Players([...team1Players, input]);
+        setTeam1Input("");
+      } else {
+        setTeam2Players([...team2Players, input]);
+        setTeam2Input("");
+      }
+    } catch (e) {
+      setError("Could not validate player ID. Check your connection and try again.");
+      console.error(e);
+    } finally {
+      setAddingTeamPlayer(null);
     }
   }
 
@@ -149,9 +176,10 @@ export default function Setup() {
               />
               <button
                 onClick={() => addTeamPlayer(1)}
+                disabled={addingTeamPlayer === 1 || loading}
                 className="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg font-semibold transition-colors"
               >
-                Add
+                {addingTeamPlayer === 1 ? "Checking..." : "Add"}
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -178,9 +206,10 @@ export default function Setup() {
               />
               <button
                 onClick={() => addTeamPlayer(2)}
+                disabled={addingTeamPlayer === 2 || loading}
                 className="bg-green-600 hover:bg-green-700 px-3 py-2 rounded-lg font-semibold transition-colors"
               >
-                Add
+                {addingTeamPlayer === 2 ? "Checking..." : "Add"}
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
