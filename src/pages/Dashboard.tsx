@@ -467,7 +467,7 @@ function AllPlayersView({
 
         <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
           <div className="flex items-stretch justify-center gap-4">
-            <div className="flex-1 min-w-0">
+            <div className="flex-[3] min-w-0">
               <BasketballCourtHeatMap
                 shots={zoneDataToShots(zoneData)}
                 title=""
@@ -478,7 +478,7 @@ function AllPlayersView({
                 courtMaxWidthClass="max-w-full"
               />
             </div>
-            <div className="flex-1 min-w-0 flex">
+            <div className="flex-[2] min-w-0 flex">
               <ZoneGrid mode="heatmap" zoneData={zoneData} />
             </div>
           </div>
@@ -822,7 +822,7 @@ function PlayerView({
 
         <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
           <div className="flex items-stretch justify-center gap-4">
-            <div className="flex-1 min-w-0">
+            <div className="flex-[3] min-w-0">
               <BasketballCourtHeatMap
                 shots={zoneDataToShots(zoneData)}
                 title=""
@@ -833,7 +833,7 @@ function PlayerView({
                 courtMaxWidthClass="max-w-full"
               />
             </div>
-            <div className="flex-1 min-w-0 flex">
+            <div className="flex-[2] min-w-0 flex">
               <ZoneGrid mode="heatmap" zoneData={zoneData} />
             </div>
           </div>
