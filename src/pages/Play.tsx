@@ -27,6 +27,55 @@ interface GameState {
   teamRotationIndex: { team1: number; team2: number };
 }
 
+// localStorage helpers for mid-game persistence across reloads
+function saveGameToLocal(gameId: string, state: GameState) {
+  try {
+    localStorage.setItem(
+      `game_${gameId}`,
+      JSON.stringify({
+        session: state.session,
+        shots: state.shots,
+        currentPlayerId: state.currentPlayerId,
+        currentTeam: state.currentTeam,
+        teamRotationIndex: state.teamRotationIndex,
+        savedAt: Date.now(),
+      })
+    );
+  } catch {
+    // localStorage full or unavailable — not critical
+  }
+}
+
+function loadGameFromLocal(gameId: string): GameState | null {
+  try {
+    const raw = localStorage.getItem(`game_${gameId}`);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    // Expire after 24 hours
+    if (Date.now() - data.savedAt > 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(`game_${gameId}`);
+      return null;
+    }
+    return {
+      session: data.session,
+      shots: data.shots,
+      currentPlayerId: data.currentPlayerId,
+      currentTeam: data.currentTeam,
+      teamRotationIndex: data.teamRotationIndex,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function clearGameFromLocal(gameId: string) {
+  try {
+    localStorage.removeItem(`game_${gameId}`);
+  } catch {
+    // ignore
+  }
+}
+
 export default function Play() {
   const { gameId } = useParams<{ gameId: string }>();
   const location = useLocation();
@@ -101,7 +150,18 @@ export default function Play() {
   useEffect(() => {
     async function init() {
       setLoading(true);
-      // Try router state first
+
+      if (!gameId) return;
+
+      // 1. Try localStorage first (instant recovery on reload)
+      const local = loadGameFromLocal(gameId);
+      if (local && local.shots.length > 0) {
+        setGameState(local);
+        setLoading(false);
+        return;
+      }
+
+      // 2. Try router state (fresh navigation from Setup)
       const navState = location.state as { gameSession?: GameSession } | null;
       if (navState?.gameSession) {
         initFromState(navState.gameSession, []);
@@ -109,8 +169,7 @@ export default function Play() {
         return;
       }
 
-      // Fallback: read from Firestore
-      if (!gameId) return;
+      // 3. Fallback: read from Firestore
       try {
         const sessionDoc = await getDoc(doc(db, "gameSessions", gameId));
         if (!sessionDoc.exists()) {
@@ -141,14 +200,21 @@ export default function Play() {
     init();
   }, [gameId, location.state, initFromState]);
 
+  // Persist game state to localStorage on every change
+  useEffect(() => {
+    if (gameState && gameId) {
+      saveGameToLocal(gameId, gameState);
+    }
+  }, [gameState, gameId]);
+
   // Check if game is over
   useEffect(() => {
-    if (!gameState) return;
+    if (!gameState || !gameId) return;
     const { session, shots } = gameState;
+    let isOver = false;
     if (session.activityType === "individual" && shots.length >= 20) {
-      navigate(`/stats/${gameId}`, { replace: true });
+      isOver = true;
     } else if (session.activityType === "team") {
-      // Game ends when both teams have 30 shots
       const team1Shots = shots.filter((s) =>
         session.teams!.team1.includes(s.playerId)
       ).length;
@@ -156,8 +222,12 @@ export default function Play() {
         session.teams!.team2.includes(s.playerId)
       ).length;
       if (team1Shots >= 30 && team2Shots >= 30) {
-        navigate(`/stats/${gameId}`, { replace: true });
+        isOver = true;
       }
+    }
+    if (isOver) {
+      clearGameFromLocal(gameId);
+      navigate(`/stats/${gameId}`, { replace: true });
     }
   }, [gameState, gameId, navigate]);
 
