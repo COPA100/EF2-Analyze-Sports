@@ -15,7 +15,9 @@
       "Bash(git switch:*)",
       "Bash($B chain:*)",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(B=~/.claude/skills/gstack/browse/dist/browse)",
+      "Bash($B goto:*)"
     ]
   }
 }

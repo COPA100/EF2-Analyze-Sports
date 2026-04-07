@@ -155,183 +155,195 @@ export default function Stats() {
     else winner = "It's a Tie!";
   }
 
+  const radarData = [1, 2, 3, 4, 5, 6].map((z) => {
+    const total = zoneData[z].makes + zoneData[z].misses;
+    return {
+      zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
+      accuracy: total > 0 ? Math.round((zoneData[z].makes / total) * 100) : 0,
+      points: zonePoints[z],
+    };
+  });
+
+  const barData = [1, 2, 3, 4, 5, 6].map((z) => ({
+    zone: `Z${z}`,
+    points: zonePoints[z],
+    makes: zoneData[z].makes,
+    misses: zoneData[z].misses,
+  }));
+
+  const playerData = session.playerIds.map((id) => {
+    const ps = playerStats[id];
+    const pAcc = ps.shots > 0 ? Math.round((ps.makes / ps.shots) * 100) : 0;
+    return { name: id, accuracy: pAcc, points: ps.points, makes: ps.makes, shots: ps.shots };
+  });
+
+  const tooltipStyle = {
+    contentStyle: { backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 },
+    labelStyle: { color: "#f3f4f6" },
+    itemStyle: { color: "#d1d5db" },
+  };
+
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-4 pb-12">
-      <h1 className="text-3xl font-bold text-center mb-6">Game Stats</h1>
-
-      {/* Winner banner for team mode */}
-      {isTeam && (
-        <div className="text-center mb-6">
-          <p className="text-4xl font-bold text-yellow-400">{winner}</p>
-          <p className="text-lg text-gray-400 mt-2">
-            <span className="text-blue-400">Team 1: {team1Points} pts</span>
-            {" vs "}
-            <span className="text-orange-400">Team 2: {team2Points} pts</span>
-          </p>
-        </div>
-      )}
-
-      {/* Summary cards */}
-      <div className="flex gap-3 justify-center mb-8 flex-wrap">
-        <div className="bg-gray-800 rounded-xl px-6 py-4 text-center border border-amber-500/20">
-          <p className="text-3xl font-bold text-amber-400">{totalPoints}</p>
-          <p className="text-sm text-gray-400">Total Points</p>
-        </div>
-        <div className="bg-gray-800 rounded-xl px-6 py-4 text-center border border-cyan-500/20">
-          <p className="text-3xl font-bold text-cyan-400">{accuracy}%</p>
-          <p className="text-sm text-gray-400">Accuracy</p>
-        </div>
-        <div className="bg-gray-800 rounded-xl px-6 py-4 text-center border border-violet-500/20">
-          <p className="text-3xl font-bold text-violet-400">
-            {totalMakes}/{totalShots}
-          </p>
-          <p className="text-sm text-gray-400">Makes/Shots</p>
-        </div>
-      </div>
-
-      {/* Heatmap */}
-      <div className="max-w-md mx-auto mb-8">
-        <h2 className="text-xl font-semibold mb-3 text-center">Shot Heatmap</h2>
-        <BasketballCourtHeatMap
-          shots={zoneDataToShots(zoneData)}
-          title=""
-          compact
-          showLegend={false}
-          showZoneStats={false}
-          showQuickInsight={false}
-          courtMaxWidthClass="max-w-md"
-        />
-        <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
-          <span>0%</span>
-          <div
-            className="h-3 w-32 rounded"
-            style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }}
-          />
-          <span>100%</span>
-          <span className="flex items-center gap-1 ml-2">
-            <span className="w-3 h-3 bg-gray-800 rounded border border-gray-700" /> No shots
-          </span>
-        </div>
-      </div>
-
-      {/* Zone Performance Radar */}
-      <div className="max-w-md mx-auto mb-8">
-        <h2 className="text-xl font-semibold mb-3 text-center text-amber-400">
-          Zone Performance
-        </h2>
-        <div className="bg-gray-800/50 rounded-xl p-2">
-          <ResponsiveContainer width="100%" height={280}>
-            <RadarChart
-              data={[1, 2, 3, 4, 5, 6].map((z) => {
-                const total = zoneData[z].makes + zoneData[z].misses;
-                return {
-                  zone: `Zone ${z} (${ZONE_POINTS[z]}pt)`,
-                  accuracy: total > 0 ? Math.round((zoneData[z].makes / total) * 100) : 0,
-                  points: zonePoints[z],
-                };
-              })}
+    <div className="lg:h-screen bg-gray-950 text-white p-3 lg:overflow-hidden min-h-screen overflow-y-auto">
+      <div className="flex flex-col lg:h-full">
+        {/* Header row: title + summary cards + back to home */}
+        <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-bold">Game Stats</h1>
+            {isTeam && (
+              <span className="text-lg font-bold text-yellow-400">{winner}
+                <span className="text-sm text-gray-400 ml-2">
+                  <span className="text-blue-400">{team1Points}</span> – <span className="text-orange-400">{team2Points}</span>
+                </span>
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex gap-2">
+              <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-amber-500/20">
+                <span className="text-lg font-bold text-amber-400">{totalPoints}</span>
+                <span className="text-xs text-gray-400 ml-1">pts</span>
+              </div>
+              <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-cyan-500/20">
+                <span className="text-lg font-bold text-cyan-400">{accuracy}%</span>
+                <span className="text-xs text-gray-400 ml-1">acc</span>
+              </div>
+              <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-violet-500/20">
+                <span className="text-lg font-bold text-violet-400">{totalMakes}/{totalShots}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate("/")}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 px-5 rounded-lg transition-colors"
             >
-              <PolarGrid stroke="#374151" />
-              <PolarAngleAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 11 }} />
-              <PolarRadiusAxis tick={{ fill: "#6b7280", fontSize: 10 }} />
-              <Radar name="Accuracy %" dataKey="accuracy" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.25} />
-              <Radar name="Points" dataKey="points" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.2} />
-              <Legend wrapperStyle={{ fontSize: 12, color: "#9ca3af" }} />
-              <Tooltip
-                contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
-                labelStyle={{ color: "#f3f4f6" }}
-                itemStyle={{ color: "#d1d5db" }}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Points by Zone Bar Chart */}
-      <div className="max-w-md mx-auto mb-8">
-        <h2 className="text-xl font-semibold mb-3 text-center text-amber-400">
-          Points by Zone
-        </h2>
-        <div className="bg-gray-800/50 rounded-xl p-2">
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart
-              data={[1, 2, 3, 4, 5, 6].map((z) => ({
-                zone: `Z${z}`,
-                points: zonePoints[z],
-                makes: zoneData[z].makes,
-                misses: zoneData[z].misses,
-              }))}
-              margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 12 }} />
-              <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
-              <Tooltip
-                contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
-                labelStyle={{ color: "#f3f4f6" }}
-                itemStyle={{ color: "#d1d5db" }}
-              />
-              <Bar dataKey="points" name="Points" radius={[4, 4, 0, 0]}>
-                {[1, 2, 3, 4, 5, 6].map((z) => (
-                  <Cell key={z} fill={ZONE_POINTS[z] === 3 ? "#f59e0b" : ZONE_POINTS[z] === 2 ? "#3b82f6" : "#8b5cf6"} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-          <div className="flex justify-center gap-4 mt-1 text-[10px] text-gray-500">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-violet-500" />1pt</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-blue-500" />2pt</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-500" />3pt</span>
+              Back to Home
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* Per-player stats */}
-      <div className="max-w-md mx-auto mb-8">
-        <h2 className="text-xl font-semibold mb-3 text-center text-violet-400">
-          Player Stats
-        </h2>
-        <div className="bg-gray-800/50 rounded-xl p-2">
-          <ResponsiveContainer width="100%" height={Math.max(180, session.playerIds.length * 50 + 40)}>
-            <BarChart
-              layout="vertical"
-              data={session.playerIds.map((id) => {
-                const ps = playerStats[id];
-                const pAcc = ps.shots > 0 ? Math.round((ps.makes / ps.shots) * 100) : 0;
-                return { name: id, accuracy: pAcc, points: ps.points, makes: ps.makes, shots: ps.shots };
+        {/* Main content grid */}
+        <div className="flex-1 min-h-0 grid lg:grid-cols-12 gap-3 max-lg:grid-cols-1">
+          {/* Left: Heatmap */}
+          <div className="lg:col-span-4 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
+            <h2 className="text-sm font-semibold mb-2 text-center text-gray-300">Shot Heatmap</h2>
+            <div className="flex-1 min-h-0 flex items-center justify-center w-full">
+              <div className="w-full">
+                <BasketballCourtHeatMap
+                  shots={zoneDataToShots(zoneData)}
+                  title=""
+                  compact
+                  showLegend={false}
+                  showZoneStats={false}
+                  showQuickInsight={false}
+                  courtMaxWidthClass="max-w-full"
+                />
+              </div>
+            </div>
+            {/* Zone stats table */}
+            <div className="mt-2 grid grid-cols-3 gap-1 text-[10px]">
+              {[1, 2, 3, 4, 5, 6].map((z) => {
+                const total = zoneData[z].makes + zoneData[z].misses;
+                const acc = total > 0 ? Math.round((zoneData[z].makes / total) * 100) : 0;
+                return (
+                  <div key={z} className="bg-gray-800/60 rounded px-1.5 py-1 flex items-center justify-between">
+                    <span className="text-gray-400">Z{z}<span className="text-gray-600 ml-0.5">({ZONE_POINTS[z]}pt)</span></span>
+                    <span className="font-medium">
+                      <span className="text-green-400">{zoneData[z].makes}</span>
+                      <span className="text-gray-600">/</span>
+                      <span className="text-gray-300">{total}</span>
+                      <span className={`ml-1 ${acc >= 50 ? "text-green-400" : acc > 0 ? "text-red-400" : "text-gray-600"}`}>{acc}%</span>
+                    </span>
+                  </div>
+                );
               })}
-              margin={{ top: 5, right: 10, left: 5, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis type="number" tick={{ fill: "#6b7280", fontSize: 11 }} />
-              <YAxis type="category" dataKey="name" tick={{ fill: "#d1d5db", fontSize: 12 }} width={70} />
-              <Tooltip
-                contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
-                labelStyle={{ color: "#f3f4f6" }}
-                itemStyle={{ color: "#d1d5db" }}
-                formatter={(value, name) => {
-                  if (name === "Accuracy" && typeof value === "number") {
-                    return [`${value}%`, name];
-                  }
-                  return [value ?? "-", name];
-                }}
+            </div>
+            <div className="flex items-center justify-center gap-2 mt-1.5 text-[10px] text-gray-400">
+              <span>0%</span>
+              <div
+                className="h-2 w-24 rounded"
+                style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }}
               />
-              <Legend wrapperStyle={{ fontSize: 12, color: "#9ca3af" }} />
-              <Bar dataKey="points" name="Points" fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={16} />
-              <Bar dataKey="accuracy" name="Accuracy" fill="#06b6d4" radius={[0, 4, 4, 0]} barSize={16} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+              <span>100%</span>
+              <span className="flex items-center gap-1 ml-1">
+                <span className="w-2 h-2 bg-gray-800 rounded border border-gray-700" /> None
+              </span>
+            </div>
+          </div>
 
-      {/* New Game button */}
-      <div className="text-center">
-        <button
-          onClick={() => navigate("/")}
-          className="bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-4 px-12 rounded-xl transition-colors"
-        >
-          New Game
-        </button>
+          {/* Center: Zone Performance Radar */}
+          <div className="lg:col-span-4 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
+            <h2 className="text-sm font-semibold mb-2 text-center text-amber-400">Zone Performance</h2>
+            <div className="flex-1" style={{ minHeight: 280 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={radarData}>
+                  <PolarGrid stroke="#374151" />
+                  <PolarAngleAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 10 }} />
+                  <PolarRadiusAxis tick={{ fill: "#6b7280", fontSize: 9 }} />
+                  <Radar name="Accuracy %" dataKey="accuracy" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.25} />
+                  <Radar name="Points" dataKey="points" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.2} />
+                  <Legend wrapperStyle={{ fontSize: 10, color: "#9ca3af" }} />
+                  <Tooltip {...tooltipStyle} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Right: Points by Zone + Player Stats stacked */}
+          <div className="lg:col-span-4 flex flex-col gap-3">
+            {/* Points by Zone */}
+            <div className="flex-1 min-h-0 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
+              <h2 className="text-sm font-semibold mb-1 text-center text-amber-400">Points by Zone</h2>
+              <div className="flex-1" style={{ minHeight: 180 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={barData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 10 }} />
+                    <YAxis tick={{ fill: "#6b7280", fontSize: 10 }} />
+                    <Tooltip {...tooltipStyle} />
+                    <Bar dataKey="points" name="Points" radius={[4, 4, 0, 0]}>
+                      {[1, 2, 3, 4, 5, 6].map((z) => (
+                        <Cell key={z} fill={ZONE_POINTS[z] === 3 ? "#f59e0b" : ZONE_POINTS[z] === 2 ? "#3b82f6" : "#8b5cf6"} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex justify-center gap-3 text-[10px] text-gray-500">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-violet-500" />1pt</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-blue-500" />2pt</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-500" />3pt</span>
+              </div>
+            </div>
+
+            {/* Player Stats */}
+            <div className="flex-1 min-h-0 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
+              <h2 className="text-sm font-semibold mb-1 text-center text-violet-400">Player Stats</h2>
+              <div className="flex-1" style={{ minHeight: 180 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    layout="vertical"
+                    data={playerData}
+                    margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis type="number" tick={{ fill: "#6b7280", fontSize: 10 }} />
+                    <YAxis type="category" dataKey="name" tick={{ fill: "#d1d5db", fontSize: 10 }} width={55} />
+                    <Tooltip
+                      {...tooltipStyle}
+                      formatter={(value, name) => {
+                        if (name === "Accuracy" && typeof value === "number") return [`${value}%`, name];
+                        return [value ?? "-", name];
+                      }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 10, color: "#9ca3af" }} />
+                    <Bar dataKey="points" name="Points" fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={14} />
+                    <Bar dataKey="accuracy" name="Accuracy" fill="#06b6d4" radius={[0, 4, 4, 0]} barSize={14} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
