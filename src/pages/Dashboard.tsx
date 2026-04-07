@@ -420,7 +420,7 @@ function AllPlayersView({
       {/* Top row: Accuracy | Heatmap (center, big) | Breakdown */}
       <div className="grid lg:grid-cols-12 gap-3 mb-2">
         <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1">
-          <ResponsiveContainer width="100%" height={240}>
+          <ResponsiveContainer width="100%" height={300}>
               <RadarChart
                 data={[1, 2, 3, 4, 5, 6].map((z) => ({
                   zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
@@ -446,21 +446,7 @@ function AllPlayersView({
             </div>
             <div className="bg-gray-800 rounded-lg p-1.5 text-center">
               <p className="text-base font-bold text-blue-400">Z{popularZone}</p>
-              <p className="text-[10px] text-gray-500">Fav ({popularCount})</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-2 w-full mt-2">
-            <div className="bg-gray-800 rounded-lg p-1.5 text-center">
-              <p className="text-base font-bold text-blue-400">{individualSessions.length}</p>
-              <p className="text-[10px] text-gray-400">Indiv</p>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-1.5 text-center">
-              <p className="text-base font-bold text-green-400">{teamSessions.length}</p>
-              <p className="text-[10px] text-gray-400">Team</p>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-1.5 text-center">
-              <p className="text-base font-bold text-yellow-400">{completedSessions.length}</p>
-              <p className="text-[10px] text-gray-400">Done</p>
+              <p className="text-[10px] text-gray-500">Favorite ({popularCount})</p>
             </div>
           </div>
         </DashboardPanel>
@@ -789,7 +775,7 @@ function PlayerView({
 
       <div className="grid lg:grid-cols-12 gap-3 mb-2">
         <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1">
-          <ResponsiveContainer width="100%" height={240}>
+          <ResponsiveContainer width="100%" height={300}>
               <RadarChart
                 data={[1, 2, 3, 4, 5, 6].map((z) => ({
                   zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
@@ -815,7 +801,7 @@ function PlayerView({
             </div>
             <div className="bg-gray-800 rounded-lg p-1.5 text-center">
               <p className="text-base font-bold text-blue-400">Z{favZone}</p>
-              <p className="text-[10px] text-gray-500">Fav ({favCount} shots)</p>
+              <p className="text-[10px] text-gray-500">Favorite ({favCount} shots)</p>
             </div>
           </div>
         </DashboardPanel>
