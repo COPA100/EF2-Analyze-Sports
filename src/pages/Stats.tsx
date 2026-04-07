@@ -239,7 +239,25 @@ export default function Stats() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-center gap-2 mt-2 text-[10px] text-gray-400">
+            {/* Zone stats table */}
+            <div className="mt-2 grid grid-cols-3 gap-1 text-[10px]">
+              {[1, 2, 3, 4, 5, 6].map((z) => {
+                const total = zoneData[z].makes + zoneData[z].misses;
+                const acc = total > 0 ? Math.round((zoneData[z].makes / total) * 100) : 0;
+                return (
+                  <div key={z} className="bg-gray-800/60 rounded px-1.5 py-1 flex items-center justify-between">
+                    <span className="text-gray-400">Z{z}<span className="text-gray-600 ml-0.5">({ZONE_POINTS[z]}pt)</span></span>
+                    <span className="font-medium">
+                      <span className="text-green-400">{zoneData[z].makes}</span>
+                      <span className="text-gray-600">/</span>
+                      <span className="text-gray-300">{total}</span>
+                      <span className={`ml-1 ${acc >= 50 ? "text-green-400" : acc > 0 ? "text-red-400" : "text-gray-600"}`}>{acc}%</span>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex items-center justify-center gap-2 mt-1.5 text-[10px] text-gray-400">
               <span>0%</span>
               <div
                 className="h-2 w-24 rounded"
