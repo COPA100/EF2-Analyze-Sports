@@ -307,10 +307,6 @@ function AllPlayersView({
   }
 
   const completedSessions = sessions.filter((s) => s.isCompleted);
-  const individualSessions = sessions.filter(
-    (s) => s.activityType === "individual"
-  );
-  const teamSessions = sessions.filter((s) => s.activityType === "team");
   const allPlayerIds = [...new Set(sessions.flatMap((s) => s.playerIds))];
 
   // Zone aggregate data
