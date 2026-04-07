@@ -214,7 +214,7 @@ export default function Stats() {
             </div>
             <button
               onClick={() => navigate("/")}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-1.5 px-4 rounded-lg transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 px-5 rounded-lg transition-colors"
             >
               Back to Home
             </button>
@@ -273,8 +273,8 @@ export default function Stats() {
           {/* Center: Zone Performance Radar */}
           <div className="lg:col-span-4 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
             <h2 className="text-sm font-semibold mb-2 text-center text-amber-400">Zone Performance</h2>
-            <div className="flex-1 min-h-0 max-lg:h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="flex-1 min-h-0">
+              <ResponsiveContainer width="100%" height={280}>
                 <RadarChart data={radarData}>
                   <PolarGrid stroke="#374151" />
                   <PolarAngleAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 10 }} />
@@ -293,8 +293,8 @@ export default function Stats() {
             {/* Points by Zone */}
             <div className="flex-1 min-h-0 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
               <h2 className="text-sm font-semibold mb-1 text-center text-amber-400">Points by Zone</h2>
-              <div className="flex-1 min-h-0 max-lg:h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="flex-1 min-h-0">
+                <ResponsiveContainer width="100%" height={180}>
                   <BarChart data={barData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                     <XAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 10 }} />
@@ -318,8 +318,8 @@ export default function Stats() {
             {/* Player Stats */}
             <div className="flex-1 min-h-0 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
               <h2 className="text-sm font-semibold mb-1 text-center text-violet-400">Player Stats</h2>
-              <div className="flex-1 min-h-0 max-lg:h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="flex-1 min-h-0">
+                <ResponsiveContainer width="100%" height={180}>
                   <BarChart
                     layout="vertical"
                     data={playerData}
