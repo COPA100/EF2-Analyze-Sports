@@ -184,10 +184,10 @@ export default function Stats() {
   };
 
   return (
-    <div className="h-screen bg-gray-950 text-white p-3 overflow-hidden max-lg:overflow-y-auto max-lg:min-h-screen">
-      <div className="flex flex-col h-full">
-        {/* Header row: title + summary cards + new game */}
-        <div className="flex items-center justify-between mb-2">
+    <div className="lg:h-screen bg-gray-950 text-white p-3 lg:overflow-hidden min-h-screen overflow-y-auto">
+      <div className="flex flex-col lg:h-full">
+        {/* Header row: title + summary cards + back to home */}
+        <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-bold">Game Stats</h1>
             {isTeam && (
@@ -216,7 +216,7 @@ export default function Stats() {
               onClick={() => navigate("/")}
               className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-1.5 px-4 rounded-lg transition-colors"
             >
-              New Game
+              Back to Home
             </button>
           </div>
         </div>
@@ -273,7 +273,7 @@ export default function Stats() {
           {/* Center: Zone Performance Radar */}
           <div className="lg:col-span-4 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
             <h2 className="text-sm font-semibold mb-2 text-center text-amber-400">Zone Performance</h2>
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 max-lg:h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={radarData}>
                   <PolarGrid stroke="#374151" />
@@ -293,7 +293,7 @@ export default function Stats() {
             {/* Points by Zone */}
             <div className="flex-1 min-h-0 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
               <h2 className="text-sm font-semibold mb-1 text-center text-amber-400">Points by Zone</h2>
-              <div className="flex-1 min-h-0">
+              <div className="flex-1 min-h-0 max-lg:h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={barData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -318,7 +318,7 @@ export default function Stats() {
             {/* Player Stats */}
             <div className="flex-1 min-h-0 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
               <h2 className="text-sm font-semibold mb-1 text-center text-violet-400">Player Stats</h2>
-              <div className="flex-1 min-h-0">
+              <div className="flex-1 min-h-0 max-lg:h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     layout="vertical"
