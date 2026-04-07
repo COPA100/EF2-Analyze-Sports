@@ -135,7 +135,7 @@ export default function Dashboard() {
 
   return (
     <div className="h-screen bg-gray-950 text-white p-2 overflow-hidden lg:overflow-hidden max-lg:overflow-y-auto max-lg:min-h-screen">
-      <div className="max-w-[1600px] mx-auto h-full flex flex-col">
+      <div className="h-full flex flex-col">
         {/* Header */}
         <div className="grid grid-cols-3 items-center mb-1">
           <button
@@ -404,9 +404,9 @@ function AllPlayersView({
       gameId: s.id,
     }));
   return (
-    <div>
+    <div className="flex flex-col h-full">
       {/* Stat cards row */}
-      <div className="grid grid-cols-4 md:grid-cols-8 gap-2 mb-3">
+      <div className="grid grid-cols-4 md:grid-cols-8 gap-2 mb-2">
         <StatCard value={sessions.length} label="Games" color="text-blue-400" />
         <StatCard value={allPlayerIds.length} label="Players" color="text-purple-400" />
         <StatCard value={totalShots} label="Shots" color="text-white" />
@@ -418,27 +418,29 @@ function AllPlayersView({
       </div>
 
       {/* Top row: Accuracy | Heatmap (center, big) | Breakdown */}
-      <div className="grid lg:grid-cols-12 gap-3 mb-3">
-        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1">
-          <ResponsiveContainer width="100%" height={185}>
-            <RadarChart
-              data={[1, 2, 3, 4, 5, 6].map((z) => ({
-                zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
-                accuracy: zoneAccuracy[z],
-              }))}
-            >
-              <PolarGrid stroke="#374151" />
-              <PolarAngleAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 11 }} />
-              <PolarRadiusAxis tick={{ fill: "#6b7280", fontSize: 10 }} domain={[0, 100]} />
-              <Radar name="Accuracy %" dataKey="accuracy" stroke="#22c55e" fill="#22c55e" fillOpacity={0.25} />
-              <Tooltip
-                contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
-                labelStyle={{ color: "#f3f4f6" }}
-                itemStyle={{ color: "#d1d5db" }}
-                formatter={(value) => [`${value ?? 0}%`]}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
+      <div className="grid lg:grid-cols-12 gap-3 mb-2 flex-[3] min-h-0">
+        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1 flex flex-col">
+          <div className="flex-1 min-h-0" style={{ minHeight: 185 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart
+                data={[1, 2, 3, 4, 5, 6].map((z) => ({
+                  zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
+                  accuracy: zoneAccuracy[z],
+                }))}
+              >
+                <PolarGrid stroke="#374151" />
+                <PolarAngleAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 11 }} />
+                <PolarRadiusAxis tick={{ fill: "#6b7280", fontSize: 10 }} domain={[0, 100]} />
+                <Radar name="Accuracy %" dataKey="accuracy" stroke="#22c55e" fill="#22c55e" fillOpacity={0.25} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                  labelStyle={{ color: "#f3f4f6" }}
+                  itemStyle={{ color: "#d1d5db" }}
+                  formatter={(value) => [`${value ?? 0}%`]}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
           <div className="grid grid-cols-2 gap-2 w-full mt-1">
             <div className="bg-gray-800 rounded-lg p-1.5 text-center">
               <p className="text-base font-bold text-green-400">Z{bestZone}</p>
@@ -465,9 +467,9 @@ function AllPlayersView({
           </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
-          <div className="flex items-stretch justify-center gap-4">
-            <div className="w-full max-w-[380px]">
+        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2 flex flex-col">
+          <div className="flex-1 min-h-0 flex items-stretch justify-center gap-4">
+            <div className="flex-1 min-w-0">
               <BasketballCourtHeatMap
                 shots={zoneDataToShots(zoneData)}
                 title=""
@@ -475,51 +477,54 @@ function AllPlayersView({
                 showLegend={false}
                 showZoneStats={false}
                 showQuickInsight={false}
-                courtMaxWidthClass="max-w-[380px]"
+                courtMaxWidthClass="max-w-full"
               />
             </div>
-            <div className="w-full max-w-[320px] flex">
+            <div className="flex-1 min-w-0 flex">
               <ZoneGrid mode="heatmap" zoneData={zoneData} />
             </div>
           </div>
-          <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
+          <div className="flex items-center justify-center gap-2 mt-2 text-xs text-gray-400">
             <span>0%</span>
             <div className="h-3 w-28 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
             <span>100%</span>
           </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3">
-          <ResponsiveContainer width="100%" height={230}>
-            <BarChart
-              data={[1, 2, 3, 4, 5, 6].map((z) => ({
-                zone: `Z${z}`,
-                makes: zoneData[z].makes,
-                misses: zoneData[z].misses,
-              }))}
-              margin={{ top: 5, right: 10, left: -15, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 12 }} />
-              <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
-              <Tooltip
-                contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
-                labelStyle={{ color: "#f3f4f6" }}
-                itemStyle={{ color: "#d1d5db" }}
-              />
-              <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
-              <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={0} stackId="shots" />
-              <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
-            </BarChart>
-          </ResponsiveContainer>
+        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3 flex flex-col">
+          <div className="flex-1 min-h-0" style={{ minHeight: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={[1, 2, 3, 4, 5, 6].map((z) => ({
+                  zone: `Z${z}`,
+                  makes: zoneData[z].makes,
+                  misses: zoneData[z].misses,
+                }))}
+                margin={{ top: 5, right: 10, left: -15, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 12 }} />
+                <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                  labelStyle={{ color: "#f3f4f6" }}
+                  itemStyle={{ color: "#d1d5db" }}
+                />
+                <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
+                <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={0} stackId="shots" />
+                <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </DashboardPanel>
       </div>
 
       {/* Bottom row: Leaderboards + Recent Games + Trend */}
-      <div className="grid lg:grid-cols-12 gap-3">
+      <div className="grid lg:grid-cols-12 gap-3 flex-[2] min-h-0">
         {topByPoints.length > 0 && (
-          <DashboardPanel title="Top Players by Points" className="lg:col-span-3">
-            <ResponsiveContainer width="100%" height={165}>
+          <DashboardPanel title="Top Players by Points" className="lg:col-span-3 flex flex-col">
+            <div className="flex-1 min-h-0" style={{ minHeight: 165 }}>
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 layout="vertical"
                 data={topByPoints.map((id) => ({
@@ -544,12 +549,14 @@ function AllPlayersView({
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+            </div>
           </DashboardPanel>
         )}
 
         {topByAccuracy.length > 0 && (
-          <DashboardPanel title="Top Players by Accuracy" className="lg:col-span-3">
-            <ResponsiveContainer width="100%" height={165}>
+          <DashboardPanel title="Top Players by Accuracy" className="lg:col-span-3 flex flex-col">
+            <div className="flex-1 min-h-0" style={{ minHeight: 165 }}>
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 layout="vertical"
                 data={topByAccuracy.map((id) => {
@@ -579,6 +586,7 @@ function AllPlayersView({
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+            </div>
           </DashboardPanel>
         )}
 
@@ -608,20 +616,22 @@ function AllPlayersView({
         </DashboardPanel>
 
         {gamePointsTrend.length > 1 && (
-          <DashboardPanel title="Points Trend" className="lg:col-span-3">
-            <ResponsiveContainer width="100%" height={165}>
-              <LineChart data={gamePointsTrend} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="label" tick={{ fill: "#9ca3af", fontSize: 11 }} />
-                <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
-                  labelStyle={{ color: "#f3f4f6" }}
-                  itemStyle={{ color: "#d1d5db" }}
-                />
-                <Line type="monotone" dataKey="points" name="Points" stroke="#60a5fa" strokeWidth={2.5} dot={{ fill: "#60a5fa", r: 4 }} activeDot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
+          <DashboardPanel title="Points Trend" className="lg:col-span-3 flex flex-col">
+            <div className="flex-1 min-h-0" style={{ minHeight: 165 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={gamePointsTrend} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="label" tick={{ fill: "#9ca3af", fontSize: 11 }} />
+                  <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                    labelStyle={{ color: "#f3f4f6" }}
+                    itemStyle={{ color: "#d1d5db" }}
+                  />
+                  <Line type="monotone" dataKey="points" name="Points" stroke="#60a5fa" strokeWidth={2.5} dot={{ fill: "#60a5fa", r: 4 }} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </DashboardPanel>
         )}
       </div>
@@ -740,15 +750,15 @@ function PlayerView({
     .slice(-12);
 
   return (
-    <div>
+    <div className="flex flex-col h-full">
       {/* Player header */}
-      <div className="text-center mb-2">
+      <div className="text-center mb-1">
         <p className="text-xs text-gray-400">Lifetime stats for</p>
         <p className="text-xl font-bold">{playerId}</p>
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-4 md:grid-cols-8 gap-2 mb-3">
+      <div className="grid grid-cols-4 md:grid-cols-8 gap-2 mb-2">
         <StatCard
           value={playerSessions.length}
           label="Games Played"
@@ -787,27 +797,29 @@ function PlayerView({
         />
       </div>
 
-      <div className="grid lg:grid-cols-12 gap-3 mb-3">
-        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1">
-          <ResponsiveContainer width="100%" height={185}>
-            <RadarChart
-              data={[1, 2, 3, 4, 5, 6].map((z) => ({
-                zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
-                accuracy: zoneAccuracy[z],
-              }))}
-            >
-              <PolarGrid stroke="#374151" />
-              <PolarAngleAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 11 }} />
-              <PolarRadiusAxis tick={{ fill: "#6b7280", fontSize: 10 }} domain={[0, 100]} />
-              <Radar name="Accuracy %" dataKey="accuracy" stroke="#22c55e" fill="#22c55e" fillOpacity={0.25} />
-              <Tooltip
-                contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
-                labelStyle={{ color: "#f3f4f6" }}
-                itemStyle={{ color: "#d1d5db" }}
-                formatter={(value) => [`${value ?? 0}%`]}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
+      <div className="grid lg:grid-cols-12 gap-3 mb-2 flex-[3] min-h-0">
+        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1 flex flex-col">
+          <div className="flex-1 min-h-0" style={{ minHeight: 185 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart
+                data={[1, 2, 3, 4, 5, 6].map((z) => ({
+                  zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
+                  accuracy: zoneAccuracy[z],
+                }))}
+              >
+                <PolarGrid stroke="#374151" />
+                <PolarAngleAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 11 }} />
+                <PolarRadiusAxis tick={{ fill: "#6b7280", fontSize: 10 }} domain={[0, 100]} />
+                <Radar name="Accuracy %" dataKey="accuracy" stroke="#22c55e" fill="#22c55e" fillOpacity={0.25} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                  labelStyle={{ color: "#f3f4f6" }}
+                  itemStyle={{ color: "#d1d5db" }}
+                  formatter={(value) => [`${value ?? 0}%`]}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
           <div className="grid grid-cols-2 gap-2 w-full mt-1">
             <div className="bg-gray-800 rounded-lg p-1.5 text-center">
               <p className="text-base font-bold text-green-400">Z{bestZone}</p>
@@ -820,9 +832,9 @@ function PlayerView({
           </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
-          <div className="flex items-stretch justify-center gap-4">
-            <div className="w-full max-w-[380px]">
+        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2 flex flex-col">
+          <div className="flex-1 min-h-0 flex items-stretch justify-center gap-4">
+            <div className="flex-1 min-w-0">
               <BasketballCourtHeatMap
                 shots={zoneDataToShots(zoneData)}
                 title=""
@@ -830,52 +842,55 @@ function PlayerView({
                 showLegend={false}
                 showZoneStats={false}
                 showQuickInsight={false}
-                courtMaxWidthClass="max-w-[380px]"
+                courtMaxWidthClass="max-w-full"
               />
             </div>
-            <div className="w-full max-w-[320px] flex">
+            <div className="flex-1 min-w-0 flex">
               <ZoneGrid mode="heatmap" zoneData={zoneData} />
             </div>
           </div>
-          <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
+          <div className="flex items-center justify-center gap-2 mt-2 text-xs text-gray-400">
             <span>0%</span>
             <div className="h-3 w-28 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
             <span>100%</span>
           </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3">
-          <ResponsiveContainer width="100%" height={230}>
-            <BarChart
-              data={[1, 2, 3, 4, 5, 6].map((z) => ({
-                zone: `Z${z}`,
-                makes: zoneData[z].makes,
-                misses: zoneData[z].misses,
-                points: zonePoints[z],
-              }))}
-              margin={{ top: 5, right: 10, left: -15, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 12 }} />
-              <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
-              <Tooltip
-                contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
-                labelStyle={{ color: "#f3f4f6" }}
-                itemStyle={{ color: "#d1d5db" }}
-              />
-              <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
-              <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={0} stackId="shots" />
-              <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
-            </BarChart>
-          </ResponsiveContainer>
+        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3 flex flex-col">
+          <div className="flex-1 min-h-0" style={{ minHeight: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={[1, 2, 3, 4, 5, 6].map((z) => ({
+                  zone: `Z${z}`,
+                  makes: zoneData[z].makes,
+                  misses: zoneData[z].misses,
+                  points: zonePoints[z],
+                }))}
+                margin={{ top: 5, right: 10, left: -15, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="zone" tick={{ fill: "#9ca3af", fontSize: 12 }} />
+                <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                  labelStyle={{ color: "#f3f4f6" }}
+                  itemStyle={{ color: "#d1d5db" }}
+                />
+                <Legend wrapperStyle={{ fontSize: 11, color: "#9ca3af" }} />
+                <Bar dataKey="makes" name="Makes" fill="#22c55e" radius={0} stackId="shots" />
+                <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </DashboardPanel>
       </div>
 
       {/* Bottom row: Trend + Game History */}
-      <div className="grid lg:grid-cols-12 gap-3">
+      <div className="grid lg:grid-cols-12 gap-3 flex-[2] min-h-0">
         {gameTrend.length > 1 && (
-          <DashboardPanel title="Performance Trend" className="lg:col-span-8">
-            <ResponsiveContainer width="100%" height={165}>
+          <DashboardPanel title="Performance Trend" className="lg:col-span-8 flex flex-col">
+            <div className="flex-1 min-h-0" style={{ minHeight: 165 }}>
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={gameTrend.map((g, i) => ({
                   game: `G${i + 1}`,
@@ -903,6 +918,7 @@ function PlayerView({
                 <Line yAxisId="acc" type="monotone" dataKey="accuracy" name="Accuracy" stroke="#06b6d4" strokeWidth={2} dot={{ fill: "#06b6d4", r: 4 }} activeDot={{ r: 6 }} strokeDasharray="5 5" />
               </LineChart>
             </ResponsiveContainer>
+            </div>
           </DashboardPanel>
         )}
 
@@ -978,10 +994,11 @@ function DashboardPanel({
   bodyClassName?: string;
   children: ReactNode;
 }) {
+  const isFlex = className.includes("flex flex-col");
   return (
     <section className={`bg-gray-900/75 border border-gray-800 rounded-xl p-3 ${className}`}>
       <h2 className="text-sm font-semibold text-gray-200 mb-1.5 tracking-wide">{title}</h2>
-      <div className={bodyClassName}>{children}</div>
+      <div className={`${isFlex ? "flex-1 min-h-0 flex flex-col" : ""} ${bodyClassName}`}>{children}</div>
     </section>
   );
 }
