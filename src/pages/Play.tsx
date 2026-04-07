@@ -216,6 +216,11 @@ export default function Play() {
     }
     if (isOver) {
       clearGameFromLocal(gameId);
+      // Mark session as completed in Firestore
+      updateDoc(doc(db, "gameSessions", gameId), {
+        isCompleted: true,
+        endTime: Timestamp.now(),
+      }).catch((e) => console.error("Failed to mark game completed:", e));
       navigate(`/stats/${gameId}`, { replace: true });
     }
   }, [gameState, gameId, navigate]);

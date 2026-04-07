@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import type { GameSession, Shot } from "../types";
 
@@ -70,18 +70,18 @@ export default function Leaderboard() {
   useEffect(() => {
     async function load() {
       try {
-        const sessSnap = await getDocs(
-          query(
-            collection(db, "gameSessions"),
-            where("activityType", "==", "individual"),
-            where("isCompleted", "==", true)
-          )
-        );
-        const sessions = sessSnap.docs.map(
+        // Fetch ALL sessions for lifetime stats
+        const allSessSnap = await getDocs(collection(db, "gameSessions"));
+        const allSessions = allSessSnap.docs.map(
           (d) => ({ id: d.id, ...d.data() }) as GameSession
         );
 
-        if (sessions.length === 0) {
+        // Individual completed sessions (for "Best Individual Game" tab)
+        const individualSessions = allSessions.filter(
+          (s) => s.activityType === "individual" && s.isCompleted
+        );
+
+        if (allSessions.length === 0) {
           setLoading(false);
           return;
         }
@@ -91,22 +91,22 @@ export default function Leaderboard() {
           (d) => ({ id: d.id, ...d.data() }) as Shot
         );
 
-        const gameIds = new Set(sessions.map((s) => s.id));
+        const individualGameIds = new Set(individualSessions.map((s) => s.id));
         const individualShots = allShots.filter(
-          (s) => s.activityType === "individual" && gameIds.has(s.gameId)
+          (s) => s.activityType === "individual" && individualGameIds.has(s.gameId)
         );
 
-        // --- Lifetime stats ---
+        // --- Lifetime stats (ALL games: individual + team) ---
         const playerGames: Record<string, number> = {};
-        for (const sess of sessions) {
+        for (const sess of allSessions) {
           for (const pid of sess.playerIds) {
             playerGames[pid] = (playerGames[pid] || 0) + 1;
           }
         }
 
-        // Group shots by player
+        // Group ALL shots by player (individual + team)
         const shotsByPlayer: Record<string, Shot[]> = {};
-        for (const s of individualShots) {
+        for (const s of allShots) {
           if (!shotsByPlayer[s.playerId]) shotsByPlayer[s.playerId] = [];
           shotsByPlayer[s.playerId].push(s);
         }
@@ -140,7 +140,7 @@ export default function Leaderboard() {
 
         // Map game -> player
         const gamePlayer: Record<string, string> = {};
-        for (const sess of sessions) {
+        for (const sess of individualSessions) {
           gamePlayer[sess.id!] = sess.playerIds[0];
         }
 

@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   collection,
   getDocs,
-  query,
-  orderBy,
   writeBatch,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
@@ -50,12 +48,14 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const sessSnap = await getDocs(
-          query(collection(db, "gameSessions"), orderBy("startTime", "desc"))
-        );
-        const sessList = sessSnap.docs.map(
-          (d) => ({ id: d.id, ...d.data() }) as GameSession
-        );
+        const sessSnap = await getDocs(collection(db, "gameSessions"));
+        const sessList = sessSnap.docs
+          .map((d) => ({ id: d.id, ...d.data() }) as GameSession)
+          .sort((a, b) => {
+            const aTime = a.startTime?.toMillis?.() ?? 0;
+            const bTime = b.startTime?.toMillis?.() ?? 0;
+            return bTime - aTime;
+          });
 
         const shotsSnap = await getDocs(collection(db, "shots"));
         const shotsList = shotsSnap.docs.map(
