@@ -254,7 +254,7 @@ export default function Stats() {
         <div className="flex-1 min-h-0 grid lg:grid-cols-12 gap-3 max-lg:grid-cols-1">
           {/* Left: Heatmap */}
           <div className="lg:col-span-4 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
-            <h2 className="text-sm font-semibold mb-2 text-center text-gray-300">Shot Heatmap</h2>
+            <h2 className="text-sm font-semibold mb-2 text-center text-white">Shot Heatmap</h2>
             <div className="flex-1 min-h-0 flex items-center justify-center w-full">
               <div className="w-full">
                 <BasketballCourtHeatMap
@@ -301,7 +301,7 @@ export default function Stats() {
 
           {/* Center: Zone Performance Radar */}
           <div className="lg:col-span-4 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
-            <h2 className="text-sm font-semibold mb-2 text-center text-amber-400">Zone Performance</h2>
+            <h2 className="text-sm font-semibold mb-2 text-center text-white">Zone Performance</h2>
             <div className="flex-1" style={{ minHeight: 280 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={radarData}>
@@ -321,7 +321,7 @@ export default function Stats() {
           <div className="lg:col-span-4 flex flex-col gap-3">
             {/* Points by Zone */}
             <div className="flex-1 min-h-0 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
-              <h2 className="text-sm font-semibold mb-1 text-center text-amber-400">Points by Zone</h2>
+              <h2 className="text-sm font-semibold mb-1 text-center text-white">Points by Zone</h2>
               <div className="flex-1" style={{ minHeight: 180 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={barData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
@@ -346,7 +346,7 @@ export default function Stats() {
 
             {/* Player Stats */}
             <div className="flex-1 min-h-0 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col overflow-y-auto">
-              <h2 className="text-sm font-semibold mb-1 text-center text-violet-400 shrink-0">Player Stats</h2>
+              <h2 className="text-sm font-semibold mb-1 text-center text-white shrink-0">Player Stats</h2>
               <div className="flex-1" style={{ minHeight: Math.max(180, playerData.length * 40) }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
@@ -364,7 +364,6 @@ export default function Stats() {
                         return [value ?? "-", name];
                       }}
                     />
-                    <Legend wrapperStyle={{ fontSize: 10, color: "#9ca3af" }} />
                     <Bar dataKey="points" name="Points" radius={[0, 4, 4, 0]} barSize={14}>
                       {playerData.map((entry, idx) => (
                         <Cell key={idx} fill={entry.team === 1 ? "#3b82f6" : entry.team === 2 ? "#f97316" : "#f59e0b"} />
@@ -378,12 +377,17 @@ export default function Stats() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              {isTeam && (
-                <div className="flex justify-center gap-3 mt-1 text-[10px] text-gray-400">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-blue-500" />Team 1</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-orange-500" />Team 2</span>
-                </div>
-              )}
+              <div className="flex justify-center gap-3 mt-1 text-[10px] text-gray-400 shrink-0">
+                {isTeam ? (
+                  <>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-blue-500" />Team 1</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-orange-500" />Team 2</span>
+                    <span className="text-gray-600">|</span>
+                  </>
+                ) : null}
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm" style={{ background: isTeam ? "linear-gradient(to right, #3b82f6 50%, #f97316 50%)" : "#f59e0b" }} />Points</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm" style={{ background: isTeam ? "linear-gradient(to right, #60a5fa 50%, #fb923c 50%)" : "#06b6d4" }} />Accuracy</span>
+              </div>
             </div>
           </div>
         </div>
