@@ -404,7 +404,7 @@ function AllPlayersView({
       gameId: s.id,
     }));
   return (
-    <div className="flex flex-col h-full">
+    <div>
       {/* Stat cards row */}
       <div className="grid grid-cols-4 md:grid-cols-8 gap-2 mb-2">
         <StatCard value={sessions.length} label="Games" color="text-blue-400" />
@@ -418,10 +418,9 @@ function AllPlayersView({
       </div>
 
       {/* Top row: Accuracy | Heatmap (center, big) | Breakdown */}
-      <div className="grid lg:grid-cols-12 gap-3 mb-2 flex-[3] min-h-0">
-        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1 flex flex-col">
-          <div className="flex-1 min-h-0" style={{ minHeight: 185 }}>
-            <ResponsiveContainer width="100%" height="100%">
+      <div className="grid lg:grid-cols-12 gap-3 mb-2">
+        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1">
+          <ResponsiveContainer width="100%" height={240}>
               <RadarChart
                 data={[1, 2, 3, 4, 5, 6].map((z) => ({
                   zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
@@ -440,7 +439,6 @@ function AllPlayersView({
                 />
               </RadarChart>
             </ResponsiveContainer>
-          </div>
           <div className="grid grid-cols-2 gap-2 w-full mt-1">
             <div className="bg-gray-800 rounded-lg p-1.5 text-center">
               <p className="text-base font-bold text-green-400">Z{bestZone}</p>
@@ -467,8 +465,8 @@ function AllPlayersView({
           </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2 flex flex-col">
-          <div className="flex-1 min-h-0 flex items-stretch justify-center gap-4">
+        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
+          <div className="flex items-stretch justify-center gap-4">
             <div className="flex-1 min-w-0">
               <BasketballCourtHeatMap
                 shots={zoneDataToShots(zoneData)}
@@ -491,9 +489,8 @@ function AllPlayersView({
           </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3 flex flex-col">
-          <div className="flex-1 min-h-0" style={{ minHeight: 200 }}>
-            <ResponsiveContainer width="100%" height="100%">
+        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3">
+          <ResponsiveContainer width="100%" height={280}>
               <BarChart
                 data={[1, 2, 3, 4, 5, 6].map((z) => ({
                   zone: `Z${z}`,
@@ -515,16 +512,14 @@ function AllPlayersView({
                 <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
               </BarChart>
             </ResponsiveContainer>
-          </div>
         </DashboardPanel>
       </div>
 
       {/* Bottom row: Leaderboards + Recent Games + Trend */}
-      <div className="grid lg:grid-cols-12 gap-3 flex-[2] min-h-0">
+      <div className="grid lg:grid-cols-12 gap-3">
         {topByPoints.length > 0 && (
-          <DashboardPanel title="Top Players by Points" className="lg:col-span-3 flex flex-col">
-            <div className="flex-1 min-h-0" style={{ minHeight: 165 }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <DashboardPanel title="Top Players by Points" className="lg:col-span-3">
+            <ResponsiveContainer width="100%" height={200}>
               <BarChart
                 layout="vertical"
                 data={topByPoints.map((id) => ({
@@ -549,14 +544,12 @@ function AllPlayersView({
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            </div>
           </DashboardPanel>
         )}
 
         {topByAccuracy.length > 0 && (
-          <DashboardPanel title="Top Players by Accuracy" className="lg:col-span-3 flex flex-col">
-            <div className="flex-1 min-h-0" style={{ minHeight: 165 }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <DashboardPanel title="Top Players by Accuracy" className="lg:col-span-3">
+            <ResponsiveContainer width="100%" height={200}>
               <BarChart
                 layout="vertical"
                 data={topByAccuracy.map((id) => {
@@ -586,11 +579,10 @@ function AllPlayersView({
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            </div>
           </DashboardPanel>
         )}
 
-        <DashboardPanel title="Recent Games" className="lg:col-span-3" bodyClassName="space-y-1.5 overflow-y-auto max-h-[165px]">
+        <DashboardPanel title="Recent Games" className="lg:col-span-3" bodyClassName="space-y-1.5 overflow-y-auto max-h-[200px]">
           {recentGames.map((sess) => (
               <button
                 key={sess.id}
@@ -616,22 +608,20 @@ function AllPlayersView({
         </DashboardPanel>
 
         {gamePointsTrend.length > 1 && (
-          <DashboardPanel title="Points Trend" className="lg:col-span-3 flex flex-col">
-            <div className="flex-1 min-h-0" style={{ minHeight: 165 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={gamePointsTrend} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis dataKey="label" tick={{ fill: "#9ca3af", fontSize: 11 }} />
-                  <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
-                    labelStyle={{ color: "#f3f4f6" }}
-                    itemStyle={{ color: "#d1d5db" }}
-                  />
-                  <Line type="monotone" dataKey="points" name="Points" stroke="#60a5fa" strokeWidth={2.5} dot={{ fill: "#60a5fa", r: 4 }} activeDot={{ r: 6 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+          <DashboardPanel title="Points Trend" className="lg:col-span-3">
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={gamePointsTrend} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="label" tick={{ fill: "#9ca3af", fontSize: 11 }} />
+                <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
+                  labelStyle={{ color: "#f3f4f6" }}
+                  itemStyle={{ color: "#d1d5db" }}
+                />
+                <Line type="monotone" dataKey="points" name="Points" stroke="#60a5fa" strokeWidth={2.5} dot={{ fill: "#60a5fa", r: 4 }} activeDot={{ r: 6 }} />
+              </LineChart>
+            </ResponsiveContainer>
           </DashboardPanel>
         )}
       </div>
@@ -750,7 +740,7 @@ function PlayerView({
     .slice(-12);
 
   return (
-    <div className="flex flex-col h-full">
+    <div>
       {/* Player header */}
       <div className="text-center mb-1">
         <p className="text-xs text-gray-400">Lifetime stats for</p>
@@ -797,10 +787,9 @@ function PlayerView({
         />
       </div>
 
-      <div className="grid lg:grid-cols-12 gap-3 mb-2 flex-[3] min-h-0">
-        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1 flex flex-col">
-          <div className="flex-1 min-h-0" style={{ minHeight: 185 }}>
-            <ResponsiveContainer width="100%" height="100%">
+      <div className="grid lg:grid-cols-12 gap-3 mb-2">
+        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1">
+          <ResponsiveContainer width="100%" height={240}>
               <RadarChart
                 data={[1, 2, 3, 4, 5, 6].map((z) => ({
                   zone: `Z${z} (${ZONE_POINTS[z]}pt)`,
@@ -819,7 +808,6 @@ function PlayerView({
                 />
               </RadarChart>
             </ResponsiveContainer>
-          </div>
           <div className="grid grid-cols-2 gap-2 w-full mt-1">
             <div className="bg-gray-800 rounded-lg p-1.5 text-center">
               <p className="text-base font-bold text-green-400">Z{bestZone}</p>
@@ -832,8 +820,8 @@ function PlayerView({
           </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2 flex flex-col">
-          <div className="flex-1 min-h-0 flex items-stretch justify-center gap-4">
+        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
+          <div className="flex items-stretch justify-center gap-4">
             <div className="flex-1 min-w-0">
               <BasketballCourtHeatMap
                 shots={zoneDataToShots(zoneData)}
@@ -856,9 +844,8 @@ function PlayerView({
           </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3 flex flex-col">
-          <div className="flex-1 min-h-0" style={{ minHeight: 200 }}>
-            <ResponsiveContainer width="100%" height="100%">
+        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3">
+          <ResponsiveContainer width="100%" height={280}>
               <BarChart
                 data={[1, 2, 3, 4, 5, 6].map((z) => ({
                   zone: `Z${z}`,
@@ -881,16 +868,14 @@ function PlayerView({
                 <Bar dataKey="misses" name="Misses" fill="#ef4444" radius={[4, 4, 0, 0]} stackId="shots" />
               </BarChart>
             </ResponsiveContainer>
-          </div>
         </DashboardPanel>
       </div>
 
       {/* Bottom row: Trend + Game History */}
-      <div className="grid lg:grid-cols-12 gap-3 flex-[2] min-h-0">
+      <div className="grid lg:grid-cols-12 gap-3">
         {gameTrend.length > 1 && (
-          <DashboardPanel title="Performance Trend" className="lg:col-span-8 flex flex-col">
-            <div className="flex-1 min-h-0" style={{ minHeight: 165 }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <DashboardPanel title="Performance Trend" className="lg:col-span-8">
+            <ResponsiveContainer width="100%" height={200}>
               <LineChart
                 data={gameTrend.map((g, i) => ({
                   game: `G${i + 1}`,
@@ -918,11 +903,10 @@ function PlayerView({
                 <Line yAxisId="acc" type="monotone" dataKey="accuracy" name="Accuracy" stroke="#06b6d4" strokeWidth={2} dot={{ fill: "#06b6d4", r: 4 }} activeDot={{ r: 6 }} strokeDasharray="5 5" />
               </LineChart>
             </ResponsiveContainer>
-            </div>
           </DashboardPanel>
         )}
 
-        <DashboardPanel title="Game History" className="lg:col-span-4" bodyClassName="space-y-1.5 overflow-y-auto max-h-[165px]">
+        <DashboardPanel title="Game History" className="lg:col-span-4" bodyClassName="space-y-1.5 overflow-y-auto max-h-[200px]">
           {playerSessions
             .slice(0, 10)
             .map((sess) => {
@@ -994,11 +978,10 @@ function DashboardPanel({
   bodyClassName?: string;
   children: ReactNode;
 }) {
-  const isFlex = className.includes("flex flex-col");
   return (
     <section className={`bg-gray-900/75 border border-gray-800 rounded-xl p-3 ${className}`}>
       <h2 className="text-sm font-semibold text-gray-200 mb-1.5 tracking-wide">{title}</h2>
-      <div className={`${isFlex ? "flex-1 min-h-0 flex flex-col" : ""} ${bodyClassName}`}>{children}</div>
+      <div className={bodyClassName}>{children}</div>
     </section>
   );
 }
