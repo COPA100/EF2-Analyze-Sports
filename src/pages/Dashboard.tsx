@@ -134,8 +134,8 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="h-screen bg-gray-950 text-white p-2 overflow-hidden lg:overflow-hidden max-lg:overflow-y-auto max-lg:min-h-screen">
-      <div className="h-full flex flex-col">
+    <div className="min-h-screen bg-gray-950 text-white p-2 pb-4 overflow-y-auto">
+      <div className="min-h-screen flex flex-col">
         {/* Header */}
         <div className="grid grid-cols-3 items-center mb-1">
           <button
@@ -217,7 +217,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="flex-1 min-h-0 overflow-hidden max-lg:overflow-visible">
+        <div className="flex-1 min-h-0">
           {lookupId ? (
             <div className="h-full overflow-y-auto pr-1">
               <PlayerView
