@@ -174,7 +174,10 @@ export default function Stats() {
   const playerData = session.playerIds.map((id) => {
     const ps = playerStats[id];
     const pAcc = ps.shots > 0 ? Math.round((ps.makes / ps.shots) * 100) : 0;
-    return { name: id, accuracy: pAcc, points: ps.points, makes: ps.makes, shots: ps.shots };
+    const team = isTeam && session.teams
+      ? session.teams.team1.includes(id) ? 1 : 2
+      : 0;
+    return { name: id, accuracy: pAcc, points: ps.points, makes: ps.makes, shots: ps.shots, team };
   });
 
   const tooltipStyle = {
@@ -221,6 +224,32 @@ export default function Stats() {
           </div>
         </div>
 
+        {/* Team Rosters */}
+        {isTeam && session.teams && (
+          <div className="flex gap-3 mb-2">
+            <div className="flex-1 bg-gray-900/75 border border-blue-500/30 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-semibold text-blue-400 shrink-0">Team 1 ({team1Points}pts):</span>
+                <div className="flex gap-1.5 flex-wrap">
+                  {session.teams.team1.map((id) => (
+                    <span key={id} className="bg-blue-500/20 text-blue-300 text-xs px-2 py-0.5 rounded-md border border-blue-500/30">{id}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 bg-gray-900/75 border border-orange-500/30 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-semibold text-orange-400 shrink-0">Team 2 ({team2Points}pts):</span>
+                <div className="flex gap-1.5 flex-wrap">
+                  {session.teams.team2.map((id) => (
+                    <span key={id} className="bg-orange-500/20 text-orange-300 text-xs px-2 py-0.5 rounded-md border border-orange-500/30">{id}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Main content grid */}
         <div className="flex-1 min-h-0 grid lg:grid-cols-12 gap-3 max-lg:grid-cols-1">
           {/* Left: Heatmap */}
@@ -251,7 +280,7 @@ export default function Stats() {
                       <span className="text-green-400">{zoneData[z].makes}</span>
                       <span className="text-gray-600">/</span>
                       <span className="text-gray-300">{total}</span>
-                      <span className={`ml-1 ${acc >= 50 ? "text-green-400" : acc > 0 ? "text-red-400" : "text-gray-600"}`}>{acc}%</span>
+                      <span className={`ml-1 ${acc >= 50 ? "text-green-400" : total > 0 ? "text-red-400" : "text-gray-600"}`}>{acc}%</span>
                     </span>
                   </div>
                 );
@@ -265,7 +294,7 @@ export default function Stats() {
               />
               <span>100%</span>
               <span className="flex items-center gap-1 ml-1">
-                <span className="w-2 h-2 bg-gray-800 rounded border border-gray-700" /> None
+                <span className="w-2 h-2 bg-gray-800 rounded border border-gray-700" /> No attempts
               </span>
             </div>
           </div>
@@ -336,11 +365,25 @@ export default function Stats() {
                       }}
                     />
                     <Legend wrapperStyle={{ fontSize: 10, color: "#9ca3af" }} />
-                    <Bar dataKey="points" name="Points" fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={14} />
-                    <Bar dataKey="accuracy" name="Accuracy" fill="#06b6d4" radius={[0, 4, 4, 0]} barSize={14} />
+                    <Bar dataKey="points" name="Points" radius={[0, 4, 4, 0]} barSize={14}>
+                      {playerData.map((entry, idx) => (
+                        <Cell key={idx} fill={entry.team === 1 ? "#3b82f6" : entry.team === 2 ? "#f97316" : "#f59e0b"} />
+                      ))}
+                    </Bar>
+                    <Bar dataKey="accuracy" name="Accuracy" radius={[0, 4, 4, 0]} barSize={14}>
+                      {playerData.map((entry, idx) => (
+                        <Cell key={idx} fill={entry.team === 1 ? "#60a5fa" : entry.team === 2 ? "#fb923c" : "#06b6d4"} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+              {isTeam && (
+                <div className="flex justify-center gap-3 mt-1 text-[10px] text-gray-400">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-blue-500" />Team 1</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-orange-500" />Team 2</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
