@@ -345,9 +345,9 @@ export default function Stats() {
             </div>
 
             {/* Player Stats */}
-            <div className="flex-1 min-h-0 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
-              <h2 className="text-sm font-semibold mb-1 text-center text-violet-400">Player Stats</h2>
-              <div className="flex-1" style={{ minHeight: 180 }}>
+            <div className="flex-1 min-h-0 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col overflow-y-auto">
+              <h2 className="text-sm font-semibold mb-1 text-center text-violet-400 shrink-0">Player Stats</h2>
+              <div className="flex-1" style={{ minHeight: Math.max(180, playerData.length * 40) }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     layout="vertical"

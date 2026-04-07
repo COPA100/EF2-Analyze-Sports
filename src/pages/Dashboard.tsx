@@ -21,7 +21,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
@@ -355,8 +354,8 @@ function AllPlayersView({
   }
 
   const topByPoints = [...allPlayerIds]
-    .filter((id) => playerStats[id].shots > 0)
-    .sort((a, b) => playerStats[b].points - playerStats[a].points)
+    .filter((id) => playerStats[id].games > 0)
+    .sort((a, b) => (playerStats[b].points / playerStats[b].games) - (playerStats[a].points / playerStats[a].games))
     .slice(0, 10);
 
   const topByAccuracy = [...allPlayerIds]
@@ -504,13 +503,13 @@ function AllPlayersView({
       {/* Bottom row: Leaderboards + Recent Games + Trend */}
       <div className="grid lg:grid-cols-12 gap-3">
         {topByPoints.length > 0 && (
-          <DashboardPanel title="Top Players by Points" className="lg:col-span-3">
+          <DashboardPanel title="Avg Points Per Game" className="lg:col-span-3">
             <ResponsiveContainer width="100%" height={200}>
               <BarChart
                 layout="vertical"
                 data={topByPoints.map((id) => ({
                   name: id,
-                  points: playerStats[id].points,
+                  avgPoints: Math.round((playerStats[id].points / playerStats[id].games) * 10) / 10,
                 }))}
                 margin={{ top: 5, right: 20, left: 5, bottom: 5 }}
               >
@@ -521,20 +520,16 @@ function AllPlayersView({
                   contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8 }}
                   labelStyle={{ color: "#f3f4f6" }}
                   itemStyle={{ color: "#d1d5db" }}
-                  formatter={(value) => [`${Number(value ?? 0)} pts`, "Points"]}
+                  formatter={(value) => [`${Number(value ?? 0)} pts/game`, "Avg Points"]}
                 />
-                <Bar dataKey="points" name="Points" radius={[0, 4, 4, 0]} barSize={18}>
-                  {topByPoints.map((_, i) => (
-                    <Cell key={i} fill={i === 0 ? "#eab308" : i === 1 ? "#9ca3af" : i === 2 ? "#f97316" : "#3b82f6"} />
-                  ))}
-                </Bar>
+                <Bar dataKey="avgPoints" name="Avg Points" fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={18} />
               </BarChart>
             </ResponsiveContainer>
           </DashboardPanel>
         )}
 
         {topByAccuracy.length > 0 && (
-          <DashboardPanel title="Top Players by Accuracy" className="lg:col-span-3">
+          <DashboardPanel title="Avg Accuracy" className="lg:col-span-3">
             <ResponsiveContainer width="100%" height={200}>
               <BarChart
                 layout="vertical"
@@ -556,13 +551,7 @@ function AllPlayersView({
                   itemStyle={{ color: "#d1d5db" }}
                   formatter={(value) => [`${Number(value ?? 0)}%`, "Accuracy"]}
                 />
-                <Bar dataKey="accuracy" name="Accuracy" radius={[0, 4, 4, 0]} barSize={18}>
-                  {topByAccuracy.map((id) => {
-                    const ps = playerStats[id];
-                    const acc = Math.round((ps.makes / ps.shots) * 100);
-                    return <Cell key={id} fill={acc >= 66 ? "#22c55e" : acc >= 33 ? "#f97316" : "#ef4444"} />;
-                  })}
-                </Bar>
+                <Bar dataKey="accuracy" name="Accuracy" fill="#06b6d4" radius={[0, 4, 4, 0]} barSize={18} />
               </BarChart>
             </ResponsiveContainer>
           </DashboardPanel>
