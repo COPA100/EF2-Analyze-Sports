@@ -30,6 +30,7 @@ import {
   Radar,
   Legend,
 } from "recharts";
+import InfoTooltip from "../components/InfoTooltip";
 
 export default function Stats() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -189,9 +190,15 @@ export default function Stats() {
   return (
     <div className="lg:h-screen bg-gray-950 text-white p-3 lg:overflow-hidden min-h-screen overflow-y-auto">
       <div className="flex flex-col lg:h-full">
-        {/* Header row: title + summary cards + back to home */}
+        {/* Header row: back button + title + summary cards */}
         <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/")}
+              className="text-gray-400 hover:text-white text-sm py-1 pr-4"
+            >
+              &larr; Home
+            </button>
             <h1 className="text-xl font-bold">Game Stats</h1>
             {isTeam && (
               <span className="text-lg font-bold text-yellow-400">{winner}
@@ -201,26 +208,18 @@ export default function Stats() {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex gap-2">
-              <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-amber-500/20">
-                <span className="text-lg font-bold text-amber-400">{totalPoints}</span>
-                <span className="text-xs text-gray-400 ml-1">pts</span>
-              </div>
-              <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-cyan-500/20">
-                <span className="text-lg font-bold text-cyan-400">{accuracy}%</span>
-                <span className="text-xs text-gray-400 ml-1">acc</span>
-              </div>
-              <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-violet-500/20">
-                <span className="text-lg font-bold text-violet-400">{totalMakes}/{totalShots}</span>
-              </div>
+          <div className="flex items-center gap-2">
+            <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-amber-500/20">
+              <span className="text-lg font-bold text-amber-400">{totalPoints}</span>
+              <span className="text-xs text-gray-400 ml-1">pts</span>
             </div>
-            <button
-              onClick={() => navigate("/")}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 px-5 rounded-lg transition-colors"
-            >
-              Back to Home
-            </button>
+            <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-cyan-500/20">
+              <span className="text-lg font-bold text-cyan-400">{accuracy}%</span>
+              <span className="text-xs text-gray-400 ml-1">acc</span>
+            </div>
+            <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-violet-500/20">
+              <span className="text-lg font-bold text-violet-400">{totalMakes}/{totalShots}</span>
+            </div>
           </div>
         </div>
 
@@ -254,7 +253,10 @@ export default function Stats() {
         <div className="flex-1 min-h-0 grid lg:grid-cols-12 gap-3 max-lg:grid-cols-1">
           {/* Left: Heatmap */}
           <div className="lg:col-span-4 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
-            <h2 className="text-sm font-semibold mb-2 text-center text-white">Shot Heatmap</h2>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold text-white flex-1 text-center">Shot Heatmap</h2>
+              <InfoTooltip text="Court visualization showing accuracy by zone. Green = high accuracy, red = low accuracy. Zone stats below show makes/total and accuracy %." />
+            </div>
             <div className="flex-1 min-h-0 flex items-center justify-center w-full">
               <div className="w-full">
                 <BasketballCourtHeatMap
@@ -301,7 +303,10 @@ export default function Stats() {
 
           {/* Center: Zone Performance Radar */}
           <div className="lg:col-span-4 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
-            <h2 className="text-sm font-semibold mb-2 text-center text-white">Zone Performance</h2>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold text-white flex-1 text-center">Zone Performance</h2>
+              <InfoTooltip text="Radar chart comparing accuracy % and points earned across all 6 zones. Helps identify strongest and weakest shooting areas." />
+            </div>
             <div className="flex-1" style={{ minHeight: 280 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={radarData}>
@@ -321,7 +326,10 @@ export default function Stats() {
           <div className="lg:col-span-4 flex flex-col gap-3">
             {/* Points by Zone */}
             <div className="flex-1 min-h-0 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col">
-              <h2 className="text-sm font-semibold mb-1 text-center text-white">Points by Zone</h2>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-sm font-semibold text-white flex-1 text-center">Points by Zone</h2>
+                <InfoTooltip text="Total points earned from each zone. Purple = 1pt zones, blue = 2pt zones, orange = 3pt zones." />
+              </div>
               <div className="flex-1" style={{ minHeight: 180 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={barData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
@@ -346,7 +354,10 @@ export default function Stats() {
 
             {/* Player Stats */}
             <div className="flex-1 min-h-0 bg-gray-900/75 border border-gray-800 rounded-xl p-3 flex flex-col overflow-y-auto">
-              <h2 className="text-sm font-semibold mb-1 text-center text-white shrink-0">Player Stats</h2>
+              <div className="flex items-center justify-between mb-1 shrink-0">
+                <h2 className="text-sm font-semibold text-white flex-1 text-center">Player Stats</h2>
+                <InfoTooltip text="Points and accuracy comparison for each player in this game. Bar colors indicate team assignment." />
+              </div>
               <div className="flex-1" style={{ minHeight: Math.max(180, playerData.length * 40) }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
