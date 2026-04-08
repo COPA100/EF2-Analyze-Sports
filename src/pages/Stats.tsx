@@ -190,9 +190,15 @@ export default function Stats() {
   return (
     <div className="lg:h-screen bg-gray-950 text-white p-3 lg:overflow-hidden min-h-screen overflow-y-auto">
       <div className="flex flex-col lg:h-full">
-        {/* Header row: title + summary cards + back to home */}
+        {/* Header row: back button + title + summary cards */}
         <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/")}
+              className="text-gray-400 hover:text-white text-sm py-1 pr-4"
+            >
+              &larr; Home
+            </button>
             <h1 className="text-xl font-bold">Game Stats</h1>
             {isTeam && (
               <span className="text-lg font-bold text-yellow-400">{winner}
@@ -202,26 +208,18 @@ export default function Stats() {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex gap-2">
-              <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-amber-500/20">
-                <span className="text-lg font-bold text-amber-400">{totalPoints}</span>
-                <span className="text-xs text-gray-400 ml-1">pts</span>
-              </div>
-              <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-cyan-500/20">
-                <span className="text-lg font-bold text-cyan-400">{accuracy}%</span>
-                <span className="text-xs text-gray-400 ml-1">acc</span>
-              </div>
-              <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-violet-500/20">
-                <span className="text-lg font-bold text-violet-400">{totalMakes}/{totalShots}</span>
-              </div>
+          <div className="flex items-center gap-2">
+            <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-amber-500/20">
+              <span className="text-lg font-bold text-amber-400">{totalPoints}</span>
+              <span className="text-xs text-gray-400 ml-1">pts</span>
             </div>
-            <button
-              onClick={() => navigate("/")}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-3 px-5 rounded-lg transition-colors"
-            >
-              Back to Home
-            </button>
+            <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-cyan-500/20">
+              <span className="text-lg font-bold text-cyan-400">{accuracy}%</span>
+              <span className="text-xs text-gray-400 ml-1">acc</span>
+            </div>
+            <div className="bg-gray-800 rounded-lg px-3 py-1.5 text-center border border-violet-500/20">
+              <span className="text-lg font-bold text-violet-400">{totalMakes}/{totalShots}</span>
+            </div>
           </div>
         </div>
 
