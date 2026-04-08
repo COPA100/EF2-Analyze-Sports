@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import type { GameSession, Shot } from "../types";
+import InfoTooltip from "../components/InfoTooltip";
 
 type SortBy = "points" | "accuracy";
 type Tab = "best" | "lifetime";
@@ -211,7 +212,14 @@ export default function Leaderboard() {
           &larr; Back
         </button>
 
-        <h1 className="text-3xl font-bold text-center mb-6">Leaderboard</h1>
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <h1 className="text-3xl font-bold text-center">Leaderboard</h1>
+          <InfoTooltip
+            text={tab === "best"
+              ? "Rankings based on each player's highest-scoring individual game. Shows their best single-game performance."
+              : "All-time rankings across all games (individual + team). Shows cumulative stats and averages."}
+          />
+        </div>
 
         {/* Tab toggle */}
         <div className="flex bg-gray-800 rounded-xl p-1 mb-4">

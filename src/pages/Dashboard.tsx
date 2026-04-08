@@ -11,6 +11,7 @@ import { ZONE_POINTS } from "../lib/scoring";
 import type { GameSession, Shot } from "../types";
 import BasketballCourtHeatMap, { zoneDataToShots } from "../components/BasketballCourtHeatMap";
 import ZoneGrid from "../components/ZoneGrid";
+import InfoTooltip from "../components/InfoTooltip";
 import {
   BarChart,
   Bar,
@@ -416,7 +417,7 @@ function AllPlayersView({
 
       {/* Top row: Accuracy | Heatmap (center, big) | Breakdown */}
       <div className="grid lg:grid-cols-12 gap-3 mb-2">
-        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1" bodyClassName="h-[280px] lg:h-[360px] flex flex-col">
+        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1" bodyClassName="h-[280px] lg:h-[360px] flex flex-col" info="Radar chart showing shooting accuracy % for each of the 6 zones. The wider the shape, the more accurate.">
           <div className="flex-1 min-h-0">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart
@@ -450,7 +451,7 @@ function AllPlayersView({
           </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
+        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2" info="Court map showing shooting accuracy by zone. Green = high accuracy, red = low accuracy. The zone grid on the right shows makes/misses per zone.">
           <div className="flex items-stretch justify-center gap-4">
             <div className="w-[52%] min-w-0">
               <BasketballCourtHeatMap
@@ -474,7 +475,7 @@ function AllPlayersView({
           </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3" bodyClassName="h-[280px] lg:h-[360px]">
+        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3" bodyClassName="h-[280px] lg:h-[360px]" info="Stacked bar chart showing total makes (green) and misses (red) for each zone across all games.">
           <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={[1, 2, 3, 4, 5, 6].map((z) => ({
@@ -503,7 +504,7 @@ function AllPlayersView({
       {/* Bottom row: Leaderboards + Recent Games + Trend */}
       <div className="grid lg:grid-cols-12 gap-3">
         {topByPoints.length > 0 && (
-          <DashboardPanel title="Avg Points Per Game" className="lg:col-span-3">
+          <DashboardPanel title="Avg Points Per Game" className="lg:col-span-3" info="Top 10 players ranked by average points scored per game across all their games.">
             <ResponsiveContainer width="100%" height={200}>
               <BarChart
                 layout="vertical"
@@ -529,7 +530,7 @@ function AllPlayersView({
         )}
 
         {topByAccuracy.length > 0 && (
-          <DashboardPanel title="Avg Accuracy" className="lg:col-span-3">
+          <DashboardPanel title="Avg Accuracy" className="lg:col-span-3" info="Top 10 players ranked by shooting accuracy. Only includes players with 5 or more shots.">
             <ResponsiveContainer width="100%" height={200}>
               <BarChart
                 layout="vertical"
@@ -557,7 +558,7 @@ function AllPlayersView({
           </DashboardPanel>
         )}
 
-        <DashboardPanel title="Recent Games" className="lg:col-span-3" bodyClassName="space-y-1.5 overflow-y-auto max-h-[200px]">
+        <DashboardPanel title="Recent Games" className="lg:col-span-3" bodyClassName="space-y-1.5 overflow-y-auto max-h-[200px]" info="The 8 most recent games. Click any game to view its detailed stats page.">
           {recentGames.map((sess) => (
               <button
                 key={sess.id}
@@ -583,7 +584,7 @@ function AllPlayersView({
         </DashboardPanel>
 
         {gamePointsTrend.length > 1 && (
-          <DashboardPanel title="Points Trend" className="lg:col-span-3">
+          <DashboardPanel title="Points Trend" className="lg:col-span-3" info="Line chart showing total points scored in each of the last 12 completed games.">
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={gamePointsTrend} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -763,7 +764,7 @@ function PlayerView({
       </div>
 
       <div className="grid lg:grid-cols-12 gap-3 mb-2">
-        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1" bodyClassName="h-[280px] lg:h-[360px] flex flex-col">
+        <DashboardPanel title="Zone Accuracy" className="lg:col-span-3 lg:order-1" bodyClassName="h-[280px] lg:h-[360px] flex flex-col" info="Radar chart showing this player's accuracy % for each zone. The wider the shape, the more accurate.">
           <div className="flex-1 min-h-0">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart
@@ -797,7 +798,7 @@ function PlayerView({
           </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2">
+        <DashboardPanel title="Shot Heatmap" className="lg:col-span-6 lg:order-2" info="Court map showing this player's shooting accuracy by zone. Green = high accuracy, red = low accuracy.">
           <div className="flex items-stretch justify-center gap-4">
             <div className="w-[52%] min-w-0">
               <BasketballCourtHeatMap
@@ -821,7 +822,7 @@ function PlayerView({
           </div>
         </DashboardPanel>
 
-        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3" bodyClassName="h-[280px] lg:h-[360px]">
+        <DashboardPanel title="Zone Breakdown" className="lg:col-span-3 lg:order-3" bodyClassName="h-[280px] lg:h-[360px]" info="Makes vs misses per zone for this player. Green = makes, red = misses stacked together.">
           <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={[1, 2, 3, 4, 5, 6].map((z) => ({
@@ -851,7 +852,7 @@ function PlayerView({
       {/* Bottom row: Trend + Game History */}
       <div className="grid lg:grid-cols-12 gap-3">
         {gameTrend.length > 1 && (
-          <DashboardPanel title="Performance Trend" className="lg:col-span-8">
+          <DashboardPanel title="Performance Trend" className="lg:col-span-8" info="Points (solid line) and accuracy % (dashed line) over this player's last 12 games.">
             <ResponsiveContainer width="100%" height={200}>
               <LineChart
                 data={gameTrend.map((g, i) => ({
@@ -883,7 +884,7 @@ function PlayerView({
           </DashboardPanel>
         )}
 
-        <DashboardPanel title="Game History" className="lg:col-span-4" bodyClassName="space-y-1.5 overflow-y-auto max-h-[200px]">
+        <DashboardPanel title="Game History" className="lg:col-span-4" bodyClassName="space-y-1.5 overflow-y-auto max-h-[200px]" info="This player's 10 most recent games. Click any game to view its detailed stats.">
           {playerSessions
             .slice(0, 10)
             .map((sess) => {
@@ -948,16 +949,21 @@ function DashboardPanel({
   title,
   className = "",
   bodyClassName = "",
+  info,
   children,
 }: {
   title: string;
   className?: string;
   bodyClassName?: string;
+  info?: string;
   children: ReactNode;
 }) {
   return (
     <section className={`bg-gray-900/75 border border-gray-800 rounded-xl p-3 ${className}`}>
-      <h2 className="text-sm font-semibold text-gray-200 mb-1.5 tracking-wide">{title}</h2>
+      <div className="flex items-center justify-between mb-1.5">
+        <h2 className="text-sm font-semibold text-gray-200 tracking-wide">{title}</h2>
+        {info && <InfoTooltip text={info} />}
+      </div>
       <div className={bodyClassName}>{children}</div>
     </section>
   );
