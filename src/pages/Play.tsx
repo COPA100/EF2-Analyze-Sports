@@ -15,9 +15,10 @@ import {
   increment,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
-import { getPointsForZone, getNextPlayer } from "../lib/scoring";
+import { getPointsForZone, getNextPlayer, ZONE_POINTS } from "../lib/scoring";
 import type { GameSession, Shot } from "../types";
 import BasketballCourtHeatMap from "../components/BasketballCourtHeatMap";
+import ZoneGrid from "../components/ZoneGrid";
 
 interface GameState {
   session: GameSession;
@@ -390,8 +391,9 @@ export default function Play() {
     shotDisplay = `Shot ${shots.length + 1} of 20`;
   }
 
-  return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center p-4">
+  // Data collection UI (shared between individual and team)
+  const dataCollectionUI = (
+    <div className="flex flex-col items-center w-full">
       {/* Header */}
       <div className="w-full max-w-md mb-4">
         <div className="text-center">
@@ -400,7 +402,7 @@ export default function Play() {
               className={`text-lg font-semibold ${
                 gameState.currentTeam === "team1"
                   ? "text-blue-400"
-                  : "text-green-400"
+                  : "text-orange-400"
               }`}
             >
               {gameState.currentTeam === "team1" ? "Team 1" : "Team 2"}
@@ -421,10 +423,10 @@ export default function Play() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-green-400 w-10">T2</span>
+                <span className="text-xs text-orange-400 w-10">T2</span>
                 <div className="flex-1 bg-gray-800 rounded-full h-2 overflow-hidden">
                   <div
-                    className="bg-green-500 h-full rounded-full transition-all"
+                    className="bg-orange-500 h-full rounded-full transition-all"
                     style={{ width: `${(shots.filter(s => session.teams!.team2.includes(s.playerId)).length / 30) * 100}%` }}
                   />
                 </div>
@@ -488,6 +490,182 @@ export default function Play() {
       >
         Undo last shot
       </button>
+    </div>
+  );
+
+  // Individual play: centered layout (unchanged)
+  if (!isTeam || !session.teams) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center p-4">
+        {dataCollectionUI}
+      </div>
+    );
+  }
+
+  // Team play: 3-column layout with live stat panels
+  return (
+    <div className="min-h-screen bg-gray-950 text-white p-3">
+      <div className="grid lg:grid-cols-[1fr_auto_1fr] gap-3 items-start max-lg:flex max-lg:flex-col max-lg:items-center">
+        {/* Left: Team 1 Stats */}
+        <TeamLivePanel
+          teamName="Team 1"
+          teamColor="blue"
+          players={session.teams.team1}
+          shots={shots}
+          teamPlayers={session.teams.team1}
+          isActive={gameState.currentTeam === "team1"}
+        />
+
+        {/* Center: Data Collection */}
+        <div className="w-full max-w-md">
+          {dataCollectionUI}
+        </div>
+
+        {/* Right: Team 2 Stats */}
+        <TeamLivePanel
+          teamName="Team 2"
+          teamColor="orange"
+          players={session.teams.team2}
+          shots={shots}
+          teamPlayers={session.teams.team2}
+          isActive={gameState.currentTeam === "team2"}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════
+   Team Live Stats Panel
+   ════════════════════════════════════════ */
+
+function TeamLivePanel({
+  teamName,
+  teamColor,
+  players,
+  shots,
+  teamPlayers,
+  isActive,
+}: {
+  teamName: string;
+  teamColor: "blue" | "orange";
+  players: string[];
+  shots: Shot[];
+  teamPlayers: string[];
+  isActive: boolean;
+}) {
+  // Filter shots for this team
+  const teamShots = shots.filter((s) => teamPlayers.includes(s.playerId));
+  const totalShots = teamShots.length;
+  const makes = teamShots.filter((s) => s.result === "make").length;
+  const misses = totalShots - makes;
+  const points = teamShots.reduce((sum, s) => sum + s.pointsEarned, 0);
+  const accuracy = totalShots > 0 ? Math.round((makes / totalShots) * 100) : 0;
+
+  // Zone data for heatmap
+  const zoneData: Record<number, { makes: number; misses: number }> = {};
+  for (let z = 1; z <= 6; z++) zoneData[z] = { makes: 0, misses: 0 };
+  for (const s of teamShots) {
+    if (s.result === "make") zoneData[s.shotFrom].makes++;
+    else zoneData[s.shotFrom].misses++;
+  }
+
+  // Per-player stats
+  const playerStats = players.map((id) => {
+    const pShots = teamShots.filter((s) => s.playerId === id);
+    const pMakes = pShots.filter((s) => s.result === "make").length;
+    const pPoints = pShots.reduce((sum, s) => sum + s.pointsEarned, 0);
+    return { id, shots: pShots.length, makes: pMakes, points: pPoints };
+  });
+
+  // Best zone
+  let bestZone = 0;
+  let bestZoneAcc = 0;
+  for (let z = 1; z <= 6; z++) {
+    const total = zoneData[z].makes + zoneData[z].misses;
+    if (total > 0) {
+      const acc = zoneData[z].makes / total;
+      if (acc > bestZoneAcc) {
+        bestZoneAcc = acc;
+        bestZone = z;
+      }
+    }
+  }
+
+  const borderColor = teamColor === "blue" ? "border-blue-500/40" : "border-orange-500/40";
+  const headerBg = teamColor === "blue" ? "bg-blue-500/15" : "bg-orange-500/15";
+  const accentText = teamColor === "blue" ? "text-blue-400" : "text-orange-400";
+  const activeBorder = isActive
+    ? (teamColor === "blue" ? "border-blue-400" : "border-orange-400")
+    : "border-gray-800";
+
+  return (
+    <div className={`bg-gray-900/75 border-2 ${activeBorder} rounded-xl p-3 w-full max-w-xs max-lg:max-w-md transition-colors`}>
+      {/* Team Header */}
+      <div className={`${headerBg} rounded-lg px-3 py-2 mb-3 text-center`}>
+        <h2 className={`text-base font-bold ${accentText}`}>{teamName}</h2>
+        <div className="flex justify-center gap-4 mt-1">
+          <span className="text-lg font-bold text-yellow-400">{points} <span className="text-xs text-gray-400 font-normal">pts</span></span>
+          <span className="text-lg font-bold text-green-400">{accuracy}% <span className="text-xs text-gray-400 font-normal">acc</span></span>
+        </div>
+      </div>
+
+      {/* Quick Stats Row */}
+      <div className="grid grid-cols-3 gap-1.5 mb-3">
+        <div className="bg-gray-800 rounded-lg p-1.5 text-center">
+          <p className="text-sm font-bold text-green-400">{makes}</p>
+          <p className="text-[10px] text-gray-500">Makes</p>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-1.5 text-center">
+          <p className="text-sm font-bold text-red-400">{misses}</p>
+          <p className="text-[10px] text-gray-500">Misses</p>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-1.5 text-center">
+          <p className="text-sm font-bold text-gray-300">{totalShots}/30</p>
+          <p className="text-[10px] text-gray-500">Shots</p>
+        </div>
+      </div>
+
+      {/* Zone Heatmap Grid */}
+      <div className="mb-3">
+        <p className="text-[10px] text-gray-500 mb-1 text-center uppercase tracking-wide">Zone Heatmap</p>
+        <div className="[&_.grid]:!max-w-none [&_.grid]:!aspect-auto [&_.grid_.col-span-6]:!min-h-[36px] [&_.grid_.col-span-3]:!min-h-[36px] [&_.grid_.col-span-2]:!min-h-[36px] [&_.grid_.text-2xl]:!text-xs [&_.grid_.text-sm]:!text-[9px] [&_.grid_.text-xs]:!text-[8px]">
+          <ZoneGrid mode="heatmap" zoneData={zoneData} />
+        </div>
+        <div className="flex items-center justify-center gap-1.5 mt-1 text-[9px] text-gray-500">
+          <span>0%</span>
+          <div className="h-1.5 w-16 rounded" style={{ background: "linear-gradient(to right, hsl(0,80%,40%), hsl(40,90%,50%), hsl(140,70%,40%))" }} />
+          <span>100%</span>
+        </div>
+      </div>
+
+      {/* Best Zone */}
+      {bestZone > 0 && (
+        <div className={`bg-gray-800 rounded-lg px-2 py-1.5 mb-3 text-center border ${borderColor}`}>
+          <p className="text-[10px] text-gray-500">Best Zone</p>
+          <p className={`text-sm font-bold ${accentText}`}>Zone {bestZone} <span className="text-gray-400 font-normal">({ZONE_POINTS[bestZone]}pt)</span> — {Math.round(bestZoneAcc * 100)}%</p>
+        </div>
+      )}
+
+      {/* Player Breakdown */}
+      <div>
+        <p className="text-[10px] text-gray-500 mb-1 text-center uppercase tracking-wide">Players</p>
+        <div className="space-y-1">
+          {playerStats.map((p) => {
+            const pAcc = p.shots > 0 ? Math.round((p.makes / p.shots) * 100) : 0;
+            return (
+              <div key={p.id} className="flex items-center justify-between bg-gray-800 rounded-lg px-2 py-1.5">
+                <span className="text-xs font-medium text-gray-200 truncate mr-2">{p.id}</span>
+                <div className="flex items-center gap-2 text-[10px] shrink-0">
+                  <span className="text-yellow-400 font-bold">{p.points}pt</span>
+                  <span className="text-gray-400">{p.makes}/{p.shots}</span>
+                  <span className={`font-medium ${pAcc >= 50 ? "text-green-400" : p.shots > 0 ? "text-red-400" : "text-gray-600"}`}>{pAcc}%</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
