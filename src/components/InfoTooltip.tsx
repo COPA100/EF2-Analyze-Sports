@@ -11,7 +11,7 @@ export default function InfoTooltip({ text }: { text: string }) {
         onMouseLeave={() => setShow(false)}
         onFocus={() => setShow(true)}
         onBlur={() => setShow(false)}
-        className="w-4 h-4 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-400 hover:text-gray-200 text-[10px] font-bold leading-none flex items-center justify-center transition-colors cursor-help"
+        className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-blue-500/60 text-gray-300 hover:text-white text-[11px] font-bold leading-none flex items-center justify-center transition-colors cursor-help border border-gray-500/50 hover:border-blue-400/60"
         aria-label="Info"
       >
         i
