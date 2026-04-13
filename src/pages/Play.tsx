@@ -496,11 +496,25 @@ export default function Play() {
     </div>
   );
 
-  // Individual play: centered layout (unchanged)
+  // Individual play: 2-column layout with live stat panel
   if (!isTeam || !session.teams) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center p-4">
-        {dataCollectionUI}
+      <div className="min-h-screen bg-gray-950 text-white p-2 lg:p-3 overflow-x-hidden flex items-center justify-center">
+        <div className="w-full max-w-5xl flex flex-col lg:flex-row gap-6 lg:gap-12 items-stretch justify-center">
+          {/* Left: Data Collection */}
+          <div className="w-full lg:w-md shrink-0 order-1 lg:min-h-176 flex items-center">
+            {dataCollectionUI}
+          </div>
+
+          {/* Right: Player Stats */}
+          <div className="w-full lg:w-md shrink-0 order-2 lg:min-h-176 flex flex-col">
+            <IndividualLivePanel
+              playerId={session.playerIds[0]}
+              shots={shots}
+              maxShots={20}
+            />
+          </div>
+        </div>
       </div>
     );
   }
@@ -566,6 +580,122 @@ export default function Play() {
               setTeamPanelSelectedPlayer((prev) => ({ ...prev, team2: playerId }))
             }
           />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════
+   Individual Live Stats Panel
+   ════════════════════════════════════════ */
+
+function IndividualLivePanel({
+  playerId,
+  shots,
+  maxShots,
+}: {
+  playerId: string;
+  shots: Shot[];
+  maxShots: number;
+}) {
+  const totalShots = shots.length;
+  const makes = shots.filter((s) => s.result === "make").length;
+  const misses = totalShots - makes;
+  const points = shots.reduce((sum, s) => sum + s.pointsEarned, 0);
+  const accuracy = totalShots > 0 ? Math.round((makes / totalShots) * 100) : 0;
+
+  // Zone data
+  const zoneData: Record<number, { makes: number; misses: number }> = {};
+  for (let z = 1; z <= 6; z++) zoneData[z] = { makes: 0, misses: 0 };
+  for (const s of shots) {
+    if (s.result === "make") zoneData[s.shotFrom].makes++;
+    else zoneData[s.shotFrom].misses++;
+  }
+
+  const makesRatio = getGradientRatioFromCounts(makes, misses);
+
+  return (
+    <div className="bg-gray-900/75 border-2 border-blue-400 rounded-xl p-4 lg:p-5 w-full h-full transition-colors flex flex-col">
+      {/* Player Header */}
+      <div className="bg-blue-500/15 rounded-lg px-4 py-3 mb-4 text-center">
+        <h2 className="text-xl font-bold text-blue-400">
+          Player {playerId}
+        </h2>
+        <div className="flex justify-center gap-5 mt-1">
+          <span className="text-2xl font-bold text-yellow-400">
+            {points} <span className="text-sm text-gray-400 font-normal">pts</span>
+          </span>
+          <span className="text-2xl font-bold" style={{ color: getGradientColorFromRatio(makesRatio) }}>
+            {accuracy}% <span className="text-sm text-gray-400 font-normal">acc</span>
+          </span>
+        </div>
+      </div>
+
+      {/* Quick Stats Row */}
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="bg-gray-800 rounded-md px-2 py-2.5 text-center">
+          <p className="text-xl font-bold text-green-400">{makes}</p>
+          <p className="text-sm text-gray-500">Makes</p>
+        </div>
+        <div className="bg-gray-800 rounded-md px-2 py-2.5 text-center">
+          <p className="text-xl font-bold text-red-400">{misses}</p>
+          <p className="text-sm text-gray-500">Misses</p>
+        </div>
+        <div className="bg-gray-800 rounded-md px-2 py-2.5 text-center">
+          <p className="text-xl font-bold text-gray-300">{totalShots}/{maxShots}</p>
+          <p className="text-sm text-gray-500">Shots</p>
+        </div>
+      </div>
+
+      {/* Compact Zone Heatmap */}
+      <div className="mb-4">
+        <p className="text-sm text-gray-500 mb-2 text-center uppercase tracking-wide">Zone Breakdown</p>
+        <div className="grid grid-cols-6 gap-2">
+          <CompactZone zone={1} data={zoneData[1]} className="col-span-6" />
+          <CompactZone zone={2} data={zoneData[2]} className="col-span-3" />
+          <CompactZone zone={3} data={zoneData[3]} className="col-span-3" />
+          <CompactZone zone={4} data={zoneData[4]} className="col-span-2" />
+          <CompactZone zone={5} data={zoneData[5]} className="col-span-2" />
+          <CompactZone zone={6} data={zoneData[6]} className="col-span-2" />
+        </div>
+        <div className="mt-2 flex items-center justify-center gap-2 text-xs text-gray-500">
+          <span>Miss-Heavy</span>
+          <span
+            className="inline-block h-3 w-20 rounded border border-gray-700"
+            style={{
+              background:
+                "linear-gradient(90deg, #ef4444 0%, #facc15 50%, #22c55e 100%)",
+            }}
+          />
+          <span>Make-Heavy</span>
+        </div>
+      </div>
+
+      {/* Player Snapshot */}
+      <div className="flex-1 min-h-0 flex flex-col">
+        <p className="text-sm text-gray-500 mb-2 text-center uppercase tracking-wide">
+          Player Snapshot
+        </p>
+        <div className="bg-gray-800/60 border border-gray-700 rounded-md px-3 py-3">
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="bg-gray-800 rounded-md p-2 text-center">
+              <p className="text-gray-400 text-xs">Attempts</p>
+              <p className="text-white text-xl font-bold">{totalShots}</p>
+            </div>
+            <div className="bg-gray-800 rounded-md p-2 text-center">
+              <p className="text-gray-400 text-xs">Makes</p>
+              <p className="text-green-400 text-xl font-bold">{makes}</p>
+            </div>
+            <div className="bg-gray-800 rounded-md p-2 text-center">
+              <p className="text-gray-400 text-xs">Misses</p>
+              <p className="text-red-400 text-xl font-bold">{misses}</p>
+            </div>
+            <div className="bg-gray-800 rounded-md p-2 text-center">
+              <p className="text-gray-400 text-xs">Points</p>
+              <p className="text-yellow-400 text-xl font-bold">{points}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
