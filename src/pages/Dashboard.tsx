@@ -307,12 +307,13 @@ function AllPlayersView({
   }
 
   const completedSessions = sessions.filter((s) => s.isCompleted);
-  const allPlayerIds = [...new Set(sessions.flatMap((s) => s.playerIds))];
+  const allPlayerIds = [...new Set(completedSessions.flatMap((s) => s.playerIds))];
+  const completedShots = shots.filter((s) => completedSessions.some((sess) => sess.id === s.gameId));
 
-  // Zone aggregate data
+  // Zone aggregate data (only completed games)
   const zoneData: Record<number, { makes: number; misses: number }> = {};
   for (let z = 1; z <= 6; z++) zoneData[z] = { makes: 0, misses: 0 };
-  for (const s of shots) {
+  for (const s of completedShots) {
     if (s.result === "make") zoneData[s.shotFrom].makes++;
     else zoneData[s.shotFrom].misses++;
   }
@@ -327,9 +328,9 @@ function AllPlayersView({
       total > 0 ? Math.round((zoneData[z].makes / total) * 100) : 0;
   }
 
-  const totalShots = shots.length;
-  const totalMakes = shots.filter((s) => s.result === "make").length;
-  const totalPoints = shots.reduce((sum, s) => sum + s.pointsEarned, 0);
+  const totalShots = completedShots.length;
+  const totalMakes = completedShots.filter((s) => s.result === "make").length;
+  const totalPoints = completedShots.reduce((sum, s) => sum + s.pointsEarned, 0);
   const overallAccuracy =
     totalShots > 0 ? Math.round((totalMakes / totalShots) * 100) : 0;
 
@@ -340,7 +341,7 @@ function AllPlayersView({
   > = {};
   for (const id of allPlayerIds)
     playerStats[id] = { shots: 0, makes: 0, points: 0, games: 0 };
-  for (const s of shots) {
+  for (const s of completedShots) {
     const ps = playerStats[s.playerId];
     if (ps) {
       ps.shots++;
@@ -348,7 +349,7 @@ function AllPlayersView({
       ps.points += s.pointsEarned;
     }
   }
-  for (const sess of sessions) {
+  for (const sess of completedSessions) {
     for (const pid of sess.playerIds) {
       if (playerStats[pid]) playerStats[pid].games++;
     }
@@ -405,7 +406,7 @@ function AllPlayersView({
     <div>
       {/* Stat cards row */}
       <div className="grid grid-cols-4 md:grid-cols-8 gap-2 mb-2">
-        <StatCard value={sessions.length} label="Games" color="text-blue-400" />
+        <StatCard value={completedSessions.length} label="Games" color="text-blue-400" />
         <StatCard value={allPlayerIds.length} label="Players" color="text-purple-400" />
         <StatCard value={totalShots} label="Shots" color="text-white" />
         <StatCard value={`${overallAccuracy}%`} label="Accuracy" color="text-green-400" />
@@ -558,17 +559,22 @@ function AllPlayersView({
           </DashboardPanel>
         )}
 
-        <DashboardPanel title="Recent Games" className="lg:col-span-3" bodyClassName="space-y-1.5 overflow-y-auto max-h-[200px]" info="The 8 most recent games. Click any game to view its detailed stats page.">
+        <DashboardPanel title="Recent Games" className="lg:col-span-3" bodyClassName="space-y-1.5 overflow-y-auto max-h-[200px]" info="The 8 most recent games. Click any game to view stats or resume an incomplete game.">
           {recentGames.map((sess) => (
               <button
                 key={sess.id}
-                onClick={() => navigate(`/stats/${sess.id}`)}
-                className="w-full bg-gray-800 rounded-lg p-2 text-left transition-colors hover:bg-gray-700"
+                onClick={() => navigate(sess.isCompleted ? `/stats/${sess.id}` : `/play/${sess.id}`)}
+                className={`w-full rounded-lg p-2 text-left transition-colors ${sess.isCompleted ? "bg-gray-800 hover:bg-gray-700" : "bg-amber-950/40 border border-amber-800/50 hover:bg-amber-900/40"}`}
               >
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className={`text-xs font-semibold ${sess.activityType === "team" ? "text-green-400" : "text-blue-400"}`}>
-                    {sess.activityType === "team" ? "Team" : "Individual"}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-xs font-semibold ${sess.activityType === "team" ? "text-green-400" : "text-blue-400"}`}>
+                      {sess.activityType === "team" ? "Team" : "Individual"}
+                    </span>
+                    {!sess.isCompleted && (
+                      <span className="text-[9px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.5 rounded">RESUME</span>
+                    )}
+                  </div>
                   <span className="text-xs font-bold text-yellow-400">{sess.totalPoints} pts</span>
                 </div>
                 {sess.activityType === "team" && sess.teams ? (
@@ -578,6 +584,9 @@ function AllPlayersView({
                   </div>
                 ) : (
                   <p className="text-[10px] text-gray-400 truncate">{sess.playerIds.join(", ")}</p>
+                )}
+                {!sess.isCompleted && (
+                  <p className="text-[10px] text-amber-400/70 mt-0.5">{sess.totalShots} shots recorded</p>
                 )}
               </button>
           ))}
@@ -620,10 +629,13 @@ function PlayerView({
   shots: Shot[];
   navigate: (path: string) => void;
 }) {
-  const playerShots = shots.filter((s) => s.playerId === playerId);
+  const completedPlayerSessions = sessions.filter((s) =>
+    s.playerIds.includes(playerId) && s.isCompleted
+  );
   const playerSessions = sessions.filter((s) =>
     s.playerIds.includes(playerId)
   );
+  const playerShots = shots.filter((s) => s.playerId === playerId && completedPlayerSessions.some((sess) => sess.id === s.gameId));
 
   if (playerShots.length === 0) {
     return (
@@ -726,7 +738,7 @@ function PlayerView({
       {/* Overview Cards */}
       <div className="grid grid-cols-4 md:grid-cols-8 gap-2 mb-2">
         <StatCard
-          value={playerSessions.length}
+          value={completedPlayerSessions.length}
           label="Games Played"
           color="text-blue-400"
         />
@@ -754,8 +766,8 @@ function PlayerView({
         />
         <StatCard
           value={
-            playerSessions.length > 0
-              ? (totalPoints / playerSessions.length).toFixed(1)
+            completedPlayerSessions.length > 0
+              ? (totalPoints / completedPlayerSessions.length).toFixed(1)
               : "0"
           }
           label="Pts/Game"
@@ -884,7 +896,7 @@ function PlayerView({
           </DashboardPanel>
         )}
 
-        <DashboardPanel title="Game History" className="lg:col-span-4" bodyClassName="space-y-1.5 overflow-y-auto max-h-[200px]" info="This player's 10 most recent games. Click any game to view its detailed stats.">
+        <DashboardPanel title="Game History" className="lg:col-span-4" bodyClassName="space-y-1.5 overflow-y-auto max-h-[200px]" info="This player's 10 most recent games. Click any game to view stats or resume an incomplete game.">
           {playerSessions
             .slice(0, 10)
             .map((sess) => {
@@ -898,13 +910,18 @@ function PlayerView({
               return (
                 <button
                   key={sess.id}
-                  onClick={() => navigate(`/stats/${sess.id}`)}
-                  className="w-full bg-gray-800 rounded-lg p-2 text-left transition-colors hover:bg-gray-700"
+                  onClick={() => navigate(sess.isCompleted ? `/stats/${sess.id}` : `/play/${sess.id}`)}
+                  className={`w-full rounded-lg p-2 text-left transition-colors ${sess.isCompleted ? "bg-gray-800 hover:bg-gray-700" : "bg-amber-950/40 border border-amber-800/50 hover:bg-amber-900/40"}`}
                 >
                   <div className="flex items-center justify-between mb-0.5">
-                    <span className={`text-xs font-semibold ${sess.activityType === "team" ? "text-green-400" : "text-blue-400"}`}>
-                      {sess.activityType === "team" ? "Team" : "Individual"}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-xs font-semibold ${sess.activityType === "team" ? "text-green-400" : "text-blue-400"}`}>
+                        {sess.activityType === "team" ? "Team" : "Individual"}
+                      </span>
+                      {!sess.isCompleted && (
+                        <span className="text-[9px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.5 rounded">RESUME</span>
+                      )}
+                    </div>
                     <span className="text-xs font-bold text-yellow-400">{gPts} pts</span>
                   </div>
                   {sess.activityType === "team" && sess.teams ? (
@@ -914,6 +931,9 @@ function PlayerView({
                     </div>
                   ) : (
                     <p className="text-[10px] text-gray-400 truncate">{sess.playerIds.join(", ")}</p>
+                  )}
+                  {!sess.isCompleted && (
+                    <p className="text-[10px] text-amber-400/70 mt-0.5">{gShots.length} shots recorded</p>
                   )}
                 </button>
               );

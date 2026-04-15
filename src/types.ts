@@ -27,4 +27,5 @@ export interface GameSession {
   endTime?: Timestamp;
   totalShots: number;
   totalPoints: number;
+  lockedUntil?: Timestamp;
 }

@@ -97,17 +97,21 @@ export default function Leaderboard() {
           (s) => s.activityType === "individual" && individualGameIds.has(s.gameId)
         );
 
-        // --- Lifetime stats (ALL games: individual + team) ---
+        // --- Lifetime stats (only completed games) ---
+        const completedSessions = allSessions.filter((s) => s.isCompleted);
+        const completedGameIds = new Set(completedSessions.map((s) => s.id));
+        const completedShots = allShots.filter((s) => completedGameIds.has(s.gameId));
+
         const playerGames: Record<string, number> = {};
-        for (const sess of allSessions) {
+        for (const sess of completedSessions) {
           for (const pid of sess.playerIds) {
             playerGames[pid] = (playerGames[pid] || 0) + 1;
           }
         }
 
-        // Group ALL shots by player (individual + team)
+        // Group completed shots by player
         const shotsByPlayer: Record<string, Shot[]> = {};
-        for (const s of allShots) {
+        for (const s of completedShots) {
           if (!shotsByPlayer[s.playerId]) shotsByPlayer[s.playerId] = [];
           shotsByPlayer[s.playerId].push(s);
         }

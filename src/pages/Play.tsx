@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   doc,
@@ -6,7 +6,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
   getDocs,
   updateDoc,
   deleteDoc,
@@ -86,10 +85,44 @@ export default function Play() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [locked, setLocked] = useState(false);
+  const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [teamPanelSelectedPlayer, setTeamPanelSelectedPlayer] = useState<{
     team1: string | null;
     team2: string | null;
   }>({ team1: null, team2: null });
+
+  // Session lock: prevents multiple people from playing the same game
+  const LOCK_DURATION_MS = 60_000; // lock lasts 60s, heartbeat refreshes every 30s
+
+  async function acquireLock(): Promise<boolean> {
+    if (!gameId) return false;
+    const sessionDoc = await getDoc(doc(db, "gameSessions", gameId));
+    if (!sessionDoc.exists()) return false;
+    const data = sessionDoc.data();
+    const lockedUntil = data.lockedUntil?.toMillis?.() ?? 0;
+    if (lockedUntil > Date.now()) {
+      // Someone else holds the lock
+      return false;
+    }
+    // Acquire lock
+    await updateDoc(doc(db, "gameSessions", gameId), {
+      lockedUntil: Timestamp.fromMillis(Date.now() + LOCK_DURATION_MS),
+    });
+    return true;
+  }
+
+  async function refreshLock() {
+    if (!gameId) return;
+    try {
+      await updateDoc(doc(db, "gameSessions", gameId), {
+        lockedUntil: Timestamp.fromMillis(Date.now() + LOCK_DURATION_MS),
+      });
+    } catch {
+      // ignore — not critical if a single heartbeat fails
+    }
+  }
+
 
   // Compute last zone from shots
   const lastZone =
@@ -149,6 +182,8 @@ export default function Play() {
       // 1. Try localStorage first (instant recovery on reload)
       const local = loadGameFromLocal(gameId);
       if (local && local.shots.length > 0) {
+        // Refresh lock for the current player returning to their own game
+        await refreshLock();
         setGameState(local);
         setLoading(false);
         return;
@@ -157,13 +192,23 @@ export default function Play() {
       // 2. Try router state (fresh navigation from Setup)
       const navState = location.state as { gameSession?: GameSession } | null;
       if (navState?.gameSession) {
+        // New game from Setup — acquire lock
+        await acquireLock();
         initFromState(navState.gameSession, []);
         setLoading(false);
         return;
       }
 
-      // 3. Fallback: read from Firestore
+      // 3. Fallback: read from Firestore (e.g. resuming from dashboard)
       try {
+        // Try to acquire lock — if someone else is playing, block
+        const gotLock = await acquireLock();
+        if (!gotLock) {
+          setLocked(true);
+          setLoading(false);
+          return;
+        }
+
         const sessionDoc = await getDoc(doc(db, "gameSessions", gameId));
         if (!sessionDoc.exists()) {
           setError("Game not found.");
@@ -174,13 +219,12 @@ export default function Play() {
 
         const shotsQuery = query(
           collection(db, "shots"),
-          where("gameId", "==", gameId),
-          orderBy("shotNumber", "asc")
+          where("gameId", "==", gameId)
         );
         const shotsSnap = await getDocs(shotsQuery);
-        const shots = shotsSnap.docs.map(
-          (d) => ({ id: d.id, ...d.data() }) as Shot
-        );
+        const shots = shotsSnap.docs
+          .map((d) => ({ id: d.id, ...d.data() }) as Shot)
+          .sort((a, b) => a.shotNumber - b.shotNumber);
 
         initFromState(session, shots);
       } catch (e) {
@@ -192,6 +236,22 @@ export default function Play() {
     }
     init();
   }, [gameId, location.state, initFromState]);
+
+  // Heartbeat: refresh lock every 30s while playing
+  // Lock is NOT released on unmount — it expires naturally after 60s.
+  // This prevents a gap where someone else could grab the game if the
+  // player briefly navigates away and comes back.
+  useEffect(() => {
+    if (!gameId || locked || !gameState) return;
+    // Refresh immediately so the lock is active right away
+    refreshLock();
+    heartbeatRef.current = setInterval(() => {
+      refreshLock();
+    }, 30_000);
+    return () => {
+      if (heartbeatRef.current) clearInterval(heartbeatRef.current);
+    };
+  }, [gameId, locked, !!gameState]);
 
   // Persist game state to localStorage on every change
   useEffect(() => {
@@ -220,10 +280,12 @@ export default function Play() {
     }
     if (isOver) {
       clearGameFromLocal(gameId);
-      // Mark session as completed in Firestore
+      if (heartbeatRef.current) clearInterval(heartbeatRef.current);
+      // Mark session as completed and release lock
       updateDoc(doc(db, "gameSessions", gameId), {
         isCompleted: true,
         endTime: Timestamp.now(),
+        lockedUntil: Timestamp.fromMillis(0),
       }).catch((e) => console.error("Failed to mark game completed:", e));
       navigate(`/stats/${gameId}`, { replace: true });
     }
@@ -361,6 +423,24 @@ export default function Play() {
     return (
       <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
         <p className="text-xl">Loading game...</p>
+      </div>
+    );
+  }
+
+  if (locked) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center gap-6 p-4">
+        <div className="text-6xl">🔒</div>
+        <p className="text-xl font-bold text-amber-400 text-center">This game is currently being played</p>
+        <p className="text-gray-400 text-center max-w-sm">
+          Someone is already recording shots for this game on another device. Please wait until they're finished.
+        </p>
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-xl font-semibold transition-colors"
+        >
+          Back to Dashboard
+        </button>
       </div>
     );
   }

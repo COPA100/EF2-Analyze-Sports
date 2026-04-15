@@ -40,6 +40,21 @@ export default function Setup() {
     setLoading(true);
     setError("");
     try {
+      // Check for an existing incomplete individual game to resume
+      const incompleteSnap = await getDocs(
+        query(
+          collection(db, "gameSessions"),
+          where("activityType", "==", "individual"),
+          where("playerIds", "array-contains", id),
+          where("isCompleted", "==", false)
+        )
+      );
+      if (!incompleteSnap.empty) {
+        const existingGame = incompleteSnap.docs[0];
+        navigate(`/play/${existingGame.id}`);
+        return;
+      }
+
       // Check if this player already played an individual game
       const existingSnap = await getDocs(
         query(

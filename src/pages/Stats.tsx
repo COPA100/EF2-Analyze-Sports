@@ -7,8 +7,6 @@ import {
   query,
   where,
   getDocs,
-  updateDoc,
-  Timestamp,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { ZONE_POINTS } from "../lib/scoring";
@@ -52,12 +50,10 @@ export default function Stats() {
         }
         const sess = { id: sessionDoc.id, ...sessionDoc.data() } as GameSession;
 
-        // Mark game as completed
+        // If game isn't completed, redirect to play page to resume
         if (!sess.isCompleted) {
-          await updateDoc(doc(db, "gameSessions", gameId), {
-            isCompleted: true,
-            endTime: Timestamp.now(),
-          });
+          navigate(`/play/${gameId}`, { replace: true });
+          return;
         }
 
         const shotsQuery = query(
