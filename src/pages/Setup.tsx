@@ -56,7 +56,6 @@ export default function Setup() {
       setTeam2Players([...team2Players, id]);
       setTeam2Input("");
     }
-    setFocusedTeam(null);
     setError("");
   }
 
