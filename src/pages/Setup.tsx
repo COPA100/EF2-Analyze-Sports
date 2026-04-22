@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { collection, doc, setDoc, addDoc, Timestamp, query, where, getDocs, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
@@ -18,9 +18,47 @@ export default function Setup() {
   const [team1Input, setTeam1Input] = useState("");
   const [team2Input, setTeam2Input] = useState("");
   const [addingTeamPlayer, setAddingTeamPlayer] = useState<1 | 2 | null>(null);
+  const [allPlayerIds, setAllPlayerIds] = useState<string[]>([]);
+  const [focusedTeam, setFocusedTeam] = useState<1 | 2 | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (mode !== "team") return;
+    (async () => {
+      try {
+        const snap = await getDocs(collection(db, "users"));
+        setAllPlayerIds(snap.docs.map((d) => d.id));
+      } catch (e) {
+        console.error("Failed to load player IDs", e);
+      }
+    })();
+  }, [mode]);
+
+  function getSuggestions(team: 1 | 2): string[] {
+    const input = (team === 1 ? team1Input : team2Input).trim().toLowerCase();
+    if (!input) return [];
+    const taken = new Set([...team1Players, ...team2Players]);
+    return allPlayerIds
+      .filter((id) => !taken.has(id) && id.toLowerCase().includes(input))
+      .slice(0, 8);
+  }
+
+  function selectSuggestion(team: 1 | 2, id: string) {
+    const otherPlayers = team === 1 ? team2Players : team1Players;
+    const players = team === 1 ? team1Players : team2Players;
+    if (players.includes(id) || otherPlayers.includes(id)) return;
+    if (team === 1) {
+      setTeam1Players([...team1Players, id]);
+      setTeam1Input("");
+    } else {
+      setTeam2Players([...team2Players, id]);
+      setTeam2Input("");
+    }
+    setFocusedTeam(null);
+    setError("");
+  }
 
   async function ensureUser(id: string) {
     await setDoc(doc(db, "users", id), {
@@ -181,14 +219,34 @@ export default function Setup() {
           <div className="flex-1 bg-blue-950/50 rounded-xl p-4 border border-blue-800">
             <h2 className="text-xl font-semibold text-blue-400 mb-3">Team 1</h2>
             <div className="flex gap-2 mb-3">
-              <input
-                type="text"
-                value={team1Input}
-                onChange={(e) => setTeam1Input(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addTeamPlayer(1)}
-                placeholder="Player ID"
-                className="flex-1 bg-gray-800 rounded-lg px-3 py-2 text-white placeholder-gray-500 outline-none focus-visible:ring-2 focus:ring-blue-500"
-              />
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={team1Input}
+                  onChange={(e) => setTeam1Input(e.target.value)}
+                  onFocus={() => setFocusedTeam(1)}
+                  onBlur={() => setTimeout(() => setFocusedTeam((t) => (t === 1 ? null : t)), 150)}
+                  onKeyDown={(e) => e.key === "Enter" && addTeamPlayer(1)}
+                  placeholder="Player ID"
+                  className="w-full bg-gray-800 rounded-lg px-3 py-2 text-white placeholder-gray-500 outline-none focus-visible:ring-2 focus:ring-blue-500"
+                />
+                {focusedTeam === 1 && getSuggestions(1).length > 0 && (
+                  <ul className="absolute top-full left-0 right-0 z-10 mt-1 bg-gray-800 border border-blue-800 rounded-lg overflow-hidden max-h-48 overflow-y-auto shadow-lg">
+                    {getSuggestions(1).map((id) => (
+                      <li key={id}>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => selectSuggestion(1, id)}
+                          className="w-full text-left px-3 py-2 text-white hover:bg-blue-900/60 transition-colors"
+                        >
+                          {id}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
               <button
                 onClick={() => addTeamPlayer(1)}
                 disabled={addingTeamPlayer === 1 || loading}
@@ -211,14 +269,34 @@ export default function Setup() {
           <div className="flex-1 bg-green-950/50 rounded-xl p-4 border border-green-800">
             <h2 className="text-xl font-semibold text-green-400 mb-3">Team 2</h2>
             <div className="flex gap-2 mb-3">
-              <input
-                type="text"
-                value={team2Input}
-                onChange={(e) => setTeam2Input(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addTeamPlayer(2)}
-                placeholder="Player ID"
-                className="flex-1 bg-gray-800 rounded-lg px-3 py-2 text-white placeholder-gray-500 outline-none focus-visible:ring-2 focus:ring-green-500"
-              />
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={team2Input}
+                  onChange={(e) => setTeam2Input(e.target.value)}
+                  onFocus={() => setFocusedTeam(2)}
+                  onBlur={() => setTimeout(() => setFocusedTeam((t) => (t === 2 ? null : t)), 150)}
+                  onKeyDown={(e) => e.key === "Enter" && addTeamPlayer(2)}
+                  placeholder="Player ID"
+                  className="w-full bg-gray-800 rounded-lg px-3 py-2 text-white placeholder-gray-500 outline-none focus-visible:ring-2 focus:ring-green-500"
+                />
+                {focusedTeam === 2 && getSuggestions(2).length > 0 && (
+                  <ul className="absolute top-full left-0 right-0 z-10 mt-1 bg-gray-800 border border-green-800 rounded-lg overflow-hidden max-h-48 overflow-y-auto shadow-lg">
+                    {getSuggestions(2).map((id) => (
+                      <li key={id}>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => selectSuggestion(2, id)}
+                          className="w-full text-left px-3 py-2 text-white hover:bg-green-900/60 transition-colors"
+                        >
+                          {id}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
               <button
                 onClick={() => addTeamPlayer(2)}
                 disabled={addingTeamPlayer === 2 || loading}
