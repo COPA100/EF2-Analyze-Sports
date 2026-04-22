@@ -5,6 +5,7 @@ import Play from "./pages/Play";
 import Stats from "./pages/Stats";
 import Dashboard from "./pages/Dashboard";
 import Leaderboard from "./pages/Leaderboard";
+import Seed from "./pages/Seed";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/stats/:gameId" element={<Stats />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/seed" element={<Seed />} />
       </Routes>
     </BrowserRouter>
   );
