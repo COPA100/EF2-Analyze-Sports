@@ -23,17 +23,18 @@ A data-collection and post-game analysis web app for a physical **tabletop baske
 8. [Project Structure](#project-structure)
 9. [Routes / Pages](#routes--pages)
 10. [Firestore Schema](#firestore-schema)
-11. [Building for Production](#building-for-production)
-12. [Deploying](#deploying)
+11. [Resetting the Database](#resetting-the-database)
+12. [Building for Production](#building-for-production)
+13. [Deploying](#deploying)
     - [Option A: Firebase Hosting (recommended)](#option-a-firebase-hosting-recommended)
     - [Option B: Vercel](#option-b-vercel)
     - [Option C: Netlify](#option-c-netlify)
     - [Option D: Any static host](#option-d-any-static-host)
-13. [Environment Variables Reference](#environment-variables-reference)
-14. [Troubleshooting](#troubleshooting)
-15. [Security Notes](#security-notes)
-16. [Contributing](#contributing)
-17. [License](#license)
+14. [Environment Variables Reference](#environment-variables-reference)
+15. [Troubleshooting](#troubleshooting)
+16. [Security Notes](#security-notes)
+17. [Contributing](#contributing)
+18. [License](#license)
 
 ---
 
@@ -309,6 +310,42 @@ Other scripts:
 | `lockedUntil` | Timestamp? | Session lock so two recorders don't double-write. |
 
 See `context.md` and `src/types.ts` for the full spec.
+
+---
+
+## Resetting the Database
+
+The Dashboard page (`/dashboard`) has a **Reset Data** button in the top-right corner. Clicking it opens a confirmation modal that asks for a **reset key** (a password). Entering the correct key and confirming wipes every document from the `shots`, `gameSessions`, and `users` collections in Firestore. The deletion is permanent — there is no undo — so the password gate is what prevents a curious student from nuking the whole dataset.
+
+### Default key
+
+Out of the box the key is `c4kclubhouse`.
+
+### Changing the reset key
+
+The key lives in the source code, not in an environment variable, so you change it by editing one line and rebuilding.
+
+1. Open `src/pages/Dashboard.tsx`.
+2. Find this line near the top of the `resetAllData` function (around **line 79**):
+   ```ts
+   if (resetKey !== "c4kclubhouse") {
+   ```
+3. Replace `"c4kclubhouse"` with whatever password you want, e.g.:
+   ```ts
+   if (resetKey !== "your-new-password-here") {
+   ```
+4. Save the file.
+5. If you're running `npm run dev`, the change hot-reloads instantly. For production you need to rebuild and redeploy:
+   ```bash
+   npm run build
+   firebase deploy --only hosting   # or your host's equivalent
+   ```
+
+### Important caveats
+
+- **The key is shipped in the client bundle.** Anyone determined enough can open browser DevTools and read it from the JS source. It's a guard against accidental clicks, not a true authentication system. If you need real protection, gate the dashboard behind Firebase Authentication and check the user's role in your Firestore security rules.
+- **Don't commit a "real" sensitive password.** Treat this key the way you'd treat a Wi-Fi password printed on a poster — useful for friction, not for secrecy.
+- **The reset deletes from Firestore directly.** You can also wipe everything from the Firebase Console (**Firestore Database → ⋮ menu → Delete database**) if you ever need to bypass the in-app button.
 
 ---
 
